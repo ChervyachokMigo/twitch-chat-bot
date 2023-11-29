@@ -1,0 +1,29 @@
+{
+  "name": "a_twitch_chat_bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js --inspect"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sequelize/core": "^7.0.0-alpha.29",
+    "axios": "^1.6.2",
+    "child_process": "^1.0.2",
+    "events": "^3.3.0",
+    "express": "^4.18.2",
+    "express-subdomain": "^1.0.5",
+    "fs": "^0.0.1-security",
+    "glob": "^10.3.10",
+    "md5-file": "^5.0.0",
+    "minimist": "^1.2.8",
+    "mysql2": "^3.6.5",
+    "node-irc": "^0.0.5",
+    "osu-api-extended": "^2.7.67",
+    "path": "^0.12.7",
+    "tmi.js": "^1.8.5"
+  }
+}
