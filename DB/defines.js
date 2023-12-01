@@ -2,7 +2,7 @@ const { createConnection } = require('mysql2/promise');
 const { Sequelize, DataTypes } = require('@sequelize/core');
 const log  = require("../tools/log.js");
 
-const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_NAME_BEATMAPS } = require("../config.js");
+const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_NAME_BEATMAPS, DB_NAME_TWITCHCHAT } = require("../config.js");
 
 const osu_beatmaps_mysql = new Sequelize( DB_NAME_BEATMAPS, DB_USER, DB_PASSWORD, { 
     dialect: `mysql`,
@@ -73,11 +73,6 @@ const mysql = new Sequelize( DB_NAME, DB_USER, DB_PASSWORD, {
     },
 });
 
-const TwitchChatData = mysql.define ('twitchchat', {
-    username: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
-    tracking: {type: DataTypes.BOOLEAN,  defaultvalue: true, allowNull: false},
-});
-
 const Token = mysql.define ('token', {
     value: {type: DataTypes.TEXT,  defaultvalue: '', allowNull: false},
     platform: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
@@ -86,16 +81,9 @@ const Token = mysql.define ('token', {
     type: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
 });
 
-const guildServicesTracking = mysql.define ('guildServicesTracking', {
-    guildid: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
-    platformaction: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
-    key: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
-});
-
-const guildSettings = mysql.define ('guildSettings', {
-    guildid: {type: DataTypes.BIGINT, defaultvalue: 0, allowNull: false},
-    settingname: {type: DataTypes.STRING, defaultvalue: '', allowNull: false},
-    value: {type: DataTypes.STRING, defaultvalue: '', allowNull: false},
+const TwitchChatData = mysql.define ('twitchchat', {
+    username: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
+    tracking: {type: DataTypes.BOOLEAN,  defaultvalue: true, allowNull: false},
 });
 
 const twitchchat_ignores = mysql.define ('twitchchat_ignores', {
@@ -121,15 +109,33 @@ const twitch_banned = mysql.define ('twitch_banned', {
     channelname: {type: DataTypes.STRING, allowNull: false}
 });
 
+const twitchchat = new Sequelize( DB_NAME_TWITCHCHAT, DB_USER, DB_PASSWORD, { 
+    dialect: `mysql`,
+    define: {
+        updatedAt: false,
+        createdAt: false,
+        deletedAt: false
+    },
+});
+
+
+const command_aliases = twitchchat.define ('command_aliases', {
+    id: {type: DataTypes.INTEGER, allowNull: false, autoIncrement: true, primaryKey: true},
+    name: {type: DataTypes.STRING, allowNull: false}
+});
+
+const custom_commands = twitchchat.define ('custom_commands', {
+    name: {type: DataTypes.STRING, allowNull: false, unique: true},
+    channelname: {type: DataTypes.STRING, allowNull: false},
+    text: {type: DataTypes.STRING, allowNull: false, defaultValue: ''},
+    perm: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 1}
+});
+
+custom_commands.hasMany(command_aliases, {foreignKey: 'command_id',  foreignKeyConstraints: false});
 
 const mysql_actions = [
-
+    { names: 'token', model: Token },
     { names: 'twitchchat', model: TwitchChatData },
-
-    { names: 'guildServicesTracking', model: guildServicesTracking },
-
-    { names: 'guildSettings', model: guildSettings },
-
     { names: 'twitchchat_ignores', model: twitchchat_ignores },
     { names: 'twitchchat_enabled', model: twitchchat_enabled },
     { names: 'twitchchat_sended_notify', model: twitchchat_sended_notify },
@@ -139,7 +145,9 @@ const mysql_actions = [
     { names: 'osu_beatmap_pp', model: osu_beatmap_pp },
     { names: 'beatmap_id', model: beatmap_id },
     { names: 'beatmap_info', model: beatmap_info },
-    { names: 'beatmap_star', model: beatmap_star }
+    { names: 'beatmap_star', model: beatmap_star },
+    { names: 'command_aliases', model: command_aliases },
+    { names: 'custom_commands', model: custom_commands },
 ];
 
 
@@ -151,6 +159,7 @@ module.exports = {
             const connection = await createConnection(`mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}`);
             await connection.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;`);
             await connection.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME_BEATMAPS}\`;`);
+            await connection.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME_TWITCHCHAT}\`;`);
         } catch (e){
             if (e.code === 'ECONNREFUSED' || e.name === `SequelizeConnectionRefusedError`){
                 throw new Error('Нет доступа к базе');
@@ -160,7 +169,8 @@ module.exports = {
         }
         await osu_beatmaps_mysql.sync({ logging: false })
         await mysql.sync({ logging: false })
-        
+        await twitchchat.sync({ logging: false, alter: true })
+
         log(`Подготовка завершена`, 'База данных')
     },
 

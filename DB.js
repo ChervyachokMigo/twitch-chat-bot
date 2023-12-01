@@ -10,26 +10,8 @@ async function MYSQL_GET_TRACKING_DATA_BY_ACTION( action, custom_query_params = 
     var query_action = action;
 
     switch (action){
-        case 'steamuser':
-        case 'streamersTrovo':
-        case 'streamersTwitch':
         case 'twitchchat':
-        case 'osuprofile':
-        case 'vkuser':
-        case 'youtubechannel':
             query_params = {tracking: true};
-            break;
-        case 'vkuser_friends':
-            query_action = 'vkuser';
-            query_params = {tracking: true, friendsTracking: true};
-            break;
-        case 'guildSettings':
-        case 'trovoclips':
-        case 'twitchclips':
-        case 'guildServicesTracking':
-        case 'vkfriend':
-        case 'botchannel':
-            query_params = custom_query_params;
             break;
         default:
             throw new Error('undefined action');

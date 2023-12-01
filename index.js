@@ -1,3 +1,5 @@
+const { prepareDB } = require('./DB/defines.js');
+
 const beatmaps_db = require("./beatmaps_db.js")
 
 const { loadTwitchChatCommands, viewCommands } = require("./twitchchat/tools/AvailableCommands.js")
@@ -9,6 +11,7 @@ const { setInfinityTimerLoop } = require("./tools/tools.js");
 const log = require("./tools/log.js");
 
 const main = async () => {
+    await prepareDB();
     await twitchchat_init();
     await beatmaps_db.init();
     init_osu_irc();
@@ -17,7 +20,7 @@ const main = async () => {
 
     log('запуск событий чата', 'initialisation');
     twitchchat_load_events();
-        
+    
     
 }
 
