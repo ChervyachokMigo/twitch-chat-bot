@@ -4,14 +4,14 @@ const fs = require("fs");
 const keypress = require('keypress');
 const { cpuUsage } = require('os-utils');
 
-const { saveError } = require("../modules/logserver");
-const { prepareDB } = require("../modules/DB/defines.js");
+const { prepareDB, select_mysql_model } = require("../DB/defines.js");
 const { ModsToInt } = require('./osu_mods');
-const { MYSQL_SAVE, MYSQL_GET_ALL } = require("../modules/DB/base");
+const { MYSQL_SAVE, MYSQL_GET_ALL } = require("../DB/base");
 
 const { osu_md5_stock } = require("../settings");
 const { download_by_md5_list } = require("./download_beatmaps_diffs");
 const actions = require("./consts/actions");
+const { get_beatmap_id, GetGamemodeToInt, Gamemodes } = require("../DB/beatmaps");
 
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 
@@ -56,10 +56,14 @@ const save_calculated_data = async () => {
     const recorded_calculations = calculated_chunck_data.slice();
     calculated_chunck_data = [];
     if (recorded_calculations.length > 0){
-        console.log( 'calc > save to mysql >',recorded_calculations.length ,'records')
-        await MYSQL_SAVE('osu_beatmap_pp', 0, recorded_calculations);
+        let completed = actions_max - next_actions.length;
+        console.log( 'calc > save to mysql >', recorded_calculations.length ,'records >',`${(completed/actions_max*100).toFixed(1)} %`);
+        await MYSQL_SAVE('osu_beatmap_pp', 0, recorded_calculations );
+        
     }
 }
+
+
 
 const ActionsController =  async () => {
 
@@ -95,18 +99,20 @@ const ActionsController =  async () => {
 
 }
 
-const calcAction = ({md5, gamemode = 'osu', acc = '100', mods = []}) => {
+const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
+
+    const gamemode_str = Gamemodes[gamemode];
 
     let acc_args = `-a ${acc}`;
 
-    if (gamemode === 'mania'){
+    if (gamemode_str === 'mania'){
         acc_args = `-s ${acc*10000}`
     }
 
     const proc = spawn( calc_exe, [
         'simulate', 
-        gamemode,
-        ...mods.length > 0? mods.map( x => `-m ${x}`): '-m CL',
+        gamemode_str,
+        ...mods.length > 0? mods.map( x => `-m ${x}`): ['-m CL'],
         '-j',
         `${path.join(osu_md5_stock, `${md5}.osu`)}`,
         acc_args,
@@ -127,12 +133,10 @@ const calcAction = ({md5, gamemode = 'osu', acc = '100', mods = []}) => {
         if (result.length > 0){
             try{
                 let data = JSON.parse(result);
-                calc_result_add ({ md5, data, mods });
+                calc_result_add ({ md5, md5_int, ...data, mods });
             } catch (e){
-                saveError(['beatmaps_pp_calc.js','std out (close)', md5, gamemode, acc, proc.spawnargs.join(' '), error].join(' > '));
                 console.error(`calc > error > something wrong with beatmap ${md5}.osu`);
             }
-
         }
     });
 
@@ -144,16 +148,13 @@ const calcAction = ({md5, gamemode = 'osu', acc = '100', mods = []}) => {
 
     proc.stderr.on('close', async () => {
         if (error.length > 0){
+            console.error(error);
             /*try{
                 fs.copyFileSync( path.join(osu_md5_stock, `${md5}.osu`), path.join( __dirname, '..\\data\\osu_pps\\calc_error\\', `${md5}.osu`) )
             } catch (e){
                 console.error(`calc > error > can not copy ${md5}.osu`)
             }*/
             beatmaps_failed.push(md5);
-
-            saveError(['beatmaps_pp_calc.js','std err (close)', md5, gamemode, acc, error].join(' > '));
-
-            
         }
     });
 
@@ -164,40 +165,66 @@ const calcAction = ({md5, gamemode = 'osu', acc = '100', mods = []}) => {
 
 }
 
-const calc_result_add = ({md5, data, mods})=> {
-    const record = {
-        md5,
-        beatmap_id: data.score.beatmap_id,
-        mods: ModsToInt(mods),
-        accuracy: Math.round(data.score.accuracy),
-        pp_total: Math.round(data.performance_attributes.pp),
-        pp_aim: Math.round(data.performance_attributes.aim),
-        pp_speed: Math.round(data.performance_attributes.speed),
-        pp_accuracy: Math.round(data.performance_attributes.accuracy),
-        stars: data.difficulty_attributes.star_rating,
-        diff_aim: data.difficulty_attributes.aim_difficulty,
-        diff_speed: data.difficulty_attributes.speed_difficulty,
-        diff_sliders: data.difficulty_attributes.slider_factor,
-        speed_notes: Math.round(data.difficulty_attributes.speed_note_count),
-        AR: data.difficulty_attributes.approach_rate,
-        OD: data.difficulty_attributes.overall_difficulty,
-    }
+const calc_result_add = ({md5, md5_int, score, performance_attributes, difficulty_attributes, mods})=> {
 
-    calculated_chunck_data.push(record)
+    const record = {
+        md5: md5_int,
+        mods: ModsToInt(mods),
+        accuracy: Math.round(score.accuracy),
+        pp_total: Math.round(performance_attributes.pp),
+        pp_aim: Math.round(performance_attributes.aim),
+        pp_speed: Math.round(performance_attributes.speed),
+        pp_accuracy: Math.round(performance_attributes.accuracy),
+        stars: difficulty_attributes.star_rating,
+        diff_aim: difficulty_attributes.aim_difficulty,
+        diff_speed: difficulty_attributes.speed_difficulty,
+        diff_sliders: difficulty_attributes.slider_factor,
+        speed_notes: Math.round(difficulty_attributes.speed_note_count),
+        AR: difficulty_attributes.approach_rate,
+        OD: difficulty_attributes.overall_difficulty,
+    }
+    calculated_chunck_data.push( record );
+}
+
+const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
+    const beatmap_ids = select_mysql_model('beatmap_id');
+    const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
+    return await beatmap_ids.findAll( {
+        where: {
+            gamemode: GetGamemodeToInt(gamemode), ranked: status
+        },
+        raw: true,
+        logging: false,
+
+        include: [beatmaps_md5],
+
+        fieldMap: {
+            'beatmaps_md5.hash': 'md5',
+        
+            'beatmaps_md5.id': 'md5_int',
+            'beatmap_id.md5': 'md5_int',
+
+            'beatmap_id.beatmap_id': 'beatmap_id',
+            'beatmap_id.beatmapset_id': 'beatmapset_id',
+            'beatmap_id.gamemode': 'gamemode',
+            'beatmap_id.ranked': 'ranked',
+        }
+
+    });
 }
 
 const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked, is_key_events = false) => {
     await prepareDB();
     
-    const beatmaps_data = (await MYSQL_GET_ALL('beatmap_data', { gamemode, ranked }, ['md5', 'gamemode', 'ranked'] ))
-        .sort ( (a, b) => a.md5.localeCompare(b.md5) );
+    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked)).sort ( (a, b) => a.md5.localeCompare(b.md5) );
 
     if (is_key_events){
         init_key_events();
     }
 
     for (let action_args of actions){
-        const is_done = await init_calc_action(beatmaps_data, action_args);
+        await init_calc_action(beatmaps_data, action_args);
         console.log(`calc complete > ${action_args.acc}% ${action_args.mods.join('+')}`);
 
         let beatmaps_results = await download_by_md5_list(beatmaps_failed);
@@ -291,15 +318,36 @@ const init_key_events = () => {
     process.stdin.resume();
 }
 
+const get_beatmap_pps_by_mods_and_acc = async (condition) => {
+    const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+    const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
+    return await osu_beatmap_pp.findAll( {
+        where: condition,
+        raw: true,
+        logging: false,
+
+        include: [beatmaps_md5],
+
+        fieldMap: {
+            'beatmaps_md5.hash': 'md5',
+        
+            'beatmaps_md5.id': 'md5_int',
+            'osu_beatmap_pp.md5': 'md5_int',
+        }
+
+    });
+}
+
 const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
     console.time('loading');
-    console.log(`calc > loading > ${acc}% ${mods.join('+')}`);
+    console.log(`calc > loading > acc: ${acc}% > mods: ${mods.join('+')}`);
 
     const mods_int = ModsToInt(mods);
 
-    calculated_osu_beatmaps = await MYSQL_GET_ALL( 'osu_beatmap_pp', { mods: mods_int, accuracy: Number(acc) } );
+    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc({ mods: mods_int, accuracy: Number(acc) });
 
-    const calculated_set = new Set( calculated_osu_beatmaps.map( (x) => `${x.md5}:${x.accuracy}:${x.mods}` ));
+    const calculated_set = new Set( calculated_osu_beatmaps.map( (x) =>`${x.md5_int}:${x.accuracy}:${x.mods}` ));
 
     console.log('loaded calculated records:', calculated_osu_beatmaps.length)
 
@@ -308,14 +356,16 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
     console.log('checking beatmaps', beatmaps.length);
 
     for (let beatmap of beatmaps){
-        if (beatmap.ranked !== 4 || beatmap.gamemode !== 'osu'){
-            console.log('skip >', beatmap.md5)
+        // md5, beatmap_id, beatmapset_id, gamemode, ranked, md5_int
+        
+        if (beatmap.ranked !== 4 || beatmap.gamemode !== 0){
+            //console.log('skip >', beatmap.md5)
             continue;
         }
 
         let args = {...beatmap, acc, mods_int, mods };
 
-        if (calculated_set.has( `${args.md5}:${args.acc}:${args.mods_int}`) === false) {
+        if (calculated_set.has( `${args.md5_int}:${args.acc}:${args.mods_int}`) === false) {
             next_actions.push( args );
         }
         
@@ -341,7 +391,7 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
 }
 
 module.exports = {
-    init_calc_action: init_calc_action,
-    //calc_from_mysql: calc_from_mysql
+    init_calc_action,
+    calc_from_mysql
 }
 

@@ -11,17 +11,19 @@ const { setInfinityTimerLoop } = require("./tools/tools.js");
 const log = require("./tools/log.js");
 
 const main = async () => {
+
     await prepareDB();
-    await twitchchat_init();
+    //await twitchchat_init();
     await beatmaps_db.init();
+    
     init_osu_irc();
+    
     loadTwitchChatCommands();
     setInfinityTimerLoop(twitchchat_refresh_category, 300);
 
     log('запуск событий чата', 'initialisation');
     twitchchat_load_events();
-    
-    
+
 }
 
 main();

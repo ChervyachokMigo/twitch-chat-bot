@@ -57,7 +57,7 @@ const twitchchat_init = async() => {
     initCommandsForwarderTimer();    
 
     this.twitchchat_client = new Client({
-        options: { debug: false },
+        options: { debug: true },
         identity: {
             username: 'sed_god',
             password: `oauth:${twitch_chat_token}`

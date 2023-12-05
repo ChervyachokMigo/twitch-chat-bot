@@ -1,5 +1,5 @@
 module.exports = [
-    { acc: '100', mods: []},
+   /* { acc: '100', mods: []},
     { acc: '99', mods: []},
     { acc: '98', mods: []},
     { acc: '95', mods: []},
@@ -22,7 +22,7 @@ module.exports = [
     
     {acc: '100', mods: ['DT', 'HD']},
     {acc: '99', mods: ['DT', 'HD']},
-    {acc: '98', mods: ['DT', 'HD']},
+    {acc: '98', mods: ['DT', 'HD']},*/
 
     {acc: '100', mods: ['DT', 'HD', 'HR']},
     {acc: '99', mods: ['DT', 'HD', 'HR']},

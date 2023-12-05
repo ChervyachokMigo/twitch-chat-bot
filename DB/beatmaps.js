@@ -1,6 +1,6 @@
 const { readdirSync } = require("fs");
 const path = require("path");
-const { Op, default: Sequelize, Attribute } = require("@sequelize/core");
+const { Op } = require("@sequelize/core");
 
 const { load_csv } = require("../osu_pps/backup/mysql_import");
 const splitArray = require("../osu_pps/tools/splitArray");
@@ -23,6 +23,8 @@ const GetGamemodeToInt = (mode) => {
             return null;
     }
 }
+
+const Gamemodes = ['osu', 'taiko', 'fruits', 'mania'];
 
 const osu_beatmap_id = select_mysql_model('beatmap_id');
 const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
@@ -368,6 +370,7 @@ const get_beatmap_pp = async (condition = {} ) => {
 }
 
 module.exports = {
+    Gamemodes,
     init_md5_cache,
     get_md5_id,
     remove_beatmap,

@@ -12,19 +12,20 @@ const shuffle = (i) => {
     }
 }
 
-const find = async ({username, acc = 100, pp_min, pp_max, aim, speed}) => {
+const find = async ({username, acc = 100, pp_min, pp_max, aim, speed, mods_int}) => {
     let i = this.founded_buffer.findIndex( x => 
         x.username === username && 
         x.acc === acc && 
         x.pp_min === pp_min && 
         x.pp_max === pp_max && 
         x.aim === aim &&
-        x.speed === speed );
+        x.speed === speed &&
+        x.mods_int === mods_int );
     
     if ( i === -1 ) {
 
         const find_condition = { 
-            mods: ModsToInt([]), 
+            mods: mods_int, 
             accuracy: acc, 
             pp_min,
             pp_max,
@@ -47,6 +48,7 @@ const find = async ({username, acc = 100, pp_min, pp_max, aim, speed}) => {
             pp_max,
             aim,
             speed,
+            mods_int,
             maps
         }) - 1;
     }

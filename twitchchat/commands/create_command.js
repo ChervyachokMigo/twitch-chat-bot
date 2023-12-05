@@ -1,5 +1,6 @@
 const { select_mysql_model } = require("../../DB/defines");
-const { SELF, CHANNEL, ALL } = require("../constants/enumPermissions");
+const { PermissionToInt, parseArgs } = require("../../tools/tools");
+const { SELF } = require("../constants/enumPermissions");
 
 module.exports = {
     command_name: `create_command`,
@@ -48,33 +49,4 @@ module.exports = {
     }
 }
 
-const PermissionToInt = (perm) => {
-    switch (perm.toLowerCase()){
-        case 'self':
-        case 'myself':
-            return SELF;
-        case 'chan':
-        case 'channel':
-            return CHANNEL;
-        case 'all':
-            return ALL;
-        default:
-            console.log('unknown permission, setted self');
-            return SELF;
-    }
-}
 
-const parseArgs = (args)=> {
-
-    const strings = args.join(' ').trim().split('--').map( v=> v.trim().replace(/(\"|\')/g, '') );
-    let result = {};
-    strings.map ( v => {
-        if (v) {
-            let s = v.split(' ')
-            const key = s.shift();
-            const values = s.join(' ');
-            result[key] = values;
-        }
-    });
-    return result;
-}

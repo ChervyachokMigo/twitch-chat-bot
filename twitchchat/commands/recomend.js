@@ -5,6 +5,8 @@ const { ALL } = require("../constants/enumPermissions");
 const { find } = require("../tools/Recommends");
 const { GET_TWITCH_OSU_BIND } = require("../../DB");
 const { irc_say } = require("../tools/ircManager");
+const { parseArgs } = require('../../tools/tools');
+const { ModsToInt } = require('../../osu_pps/osu_mods');
 
 module.exports = {
     command_name: `recomend`,
@@ -14,7 +16,7 @@ module.exports = {
     command_permission: ALL,
     action: async ({channelname, tags, comargs})=>{
         
-        const args = minimist(comargs);
+        const args = parseArgs(comargs, '-');
 
         let n = 1;
         if (args.n){
@@ -64,6 +66,11 @@ module.exports = {
             speed = Number(args.speed);
         }
 
+        let mods_int = ModsToInt([]);
+        if (args.speed){
+            mods_int = ModsToInt(args.mods.split('+'))
+        }
+
         let notify_chat = true;
         if(typeof args.notify_chat === 'string' && args.notify_chat === 'false' || typeof args.notify_chat === 'number' && args.notify_chat === 0){
             notify_chat = false;
@@ -76,7 +83,7 @@ module.exports = {
         }
 
         for (let i= 0; i < n ; i++){
-            const beatmap = await find({username: tags.username, acc, pp_min, pp_max, aim, speed});
+            const beatmap = await find({username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int});
 
             if (!beatmap){
                 return {error: '[recomend] > error no founded beatmap'}

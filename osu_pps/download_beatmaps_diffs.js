@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { writeFileSync } = require('fs');
 const path = require('path');
 const { osu_md5_stock } = require('../settings');
-const { get_beatmap_id } = require('../modules/DB/beatmaps');
+const { get_beatmap_id } = require('../DB/beatmaps');
 
 const download_beatmap_content = async ({ beatmap_id, md5 }, output_path, is_md5_check = true) => {
     if (!output_path){
