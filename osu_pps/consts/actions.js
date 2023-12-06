@@ -22,11 +22,11 @@ module.exports = [
     
     {acc: '100', mods: ['DT', 'HD']},
     {acc: '99', mods: ['DT', 'HD']},
-    {acc: '98', mods: ['DT', 'HD']},*/
+    {acc: '98', mods: ['DT', 'HD']},
 
     {acc: '100', mods: ['DT', 'HD', 'HR']},
     {acc: '99', mods: ['DT', 'HD', 'HR']},
-    {acc: '98', mods: ['DT', 'HD', 'HR']},
+    {acc: '98', mods: ['DT', 'HD', 'HR']},*/
 
     {acc: '100', mods: ['DT', 'EZ']},
     {acc: '99', mods: ['DT', 'EZ']},

@@ -12,6 +12,8 @@ const { osu_md5_stock } = require("../settings");
 const { download_by_md5_list } = require("./download_beatmaps_diffs");
 const actions = require("./consts/actions");
 const { get_beatmap_id, GetGamemodeToInt, Gamemodes } = require("../DB/beatmaps");
+const { powershell_call } = require("../powershell.js");
+const { save_calculated_data, calculated_data_length, calc_result_add } = require("./calc_data_saver.js");
 
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 
@@ -19,13 +21,12 @@ const ranked_status = {
     ranked: 4
 }
 
+const mysql_chunk_size = 500;
+
 const setting_MaxExecuting = 10;
 const setting_StartExecuting = 6;
 
 let maxExecuting = setting_StartExecuting;
-const mysql_chunk_size = 500;
-
-let calculated_chunck_data = [];
 
 let next_actions = [];
 this.current_actions = 0;
@@ -52,16 +53,6 @@ const kill_process = (appName) => {
     execSync(`taskkill /im ${appName} /F`);
 }
 
-const save_calculated_data = async () => {
-    const recorded_calculations = calculated_chunck_data.slice();
-    calculated_chunck_data = [];
-    if (recorded_calculations.length > 0){
-        let completed = actions_max - next_actions.length;
-        console.log( 'calc > save to mysql >', recorded_calculations.length ,'records >',`${(completed/actions_max*100).toFixed(1)} %`);
-        await MYSQL_SAVE('osu_beatmap_pp', 0, recorded_calculations );
-        
-    }
-}
 
 
 
@@ -71,6 +62,8 @@ const ActionsController =  async () => {
         return;
     }
 
+    let completed = actions_max - next_actions.length;
+
     if (next_actions.length === 0) {
         if (!ended_count){
             ended_count = this.current_actions;
@@ -79,11 +72,20 @@ const ActionsController =  async () => {
             ended_count = ended_count - 1;
         }
         await save_calculated_data();
+
+        if( actions_max > 0 ){
+            console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
+        }
+
         return;
     }
 
-    if (calculated_chunck_data.length > mysql_chunk_size && next_actions.length > 0){
+    if ( calculated_data_length() > mysql_chunk_size && next_actions.length > 0){
         await save_calculated_data();
+        
+        if (actions_max > 0 ){
+            console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
+        }
     }
 
     while (this.current_actions < maxExecuting){
@@ -107,7 +109,21 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
 
     if (gamemode_str === 'mania'){
         acc_args = `-s ${acc*10000}`
-    }
+    };
+
+
+    /*powershell_call({
+        path: calc_exe, 
+        action: 'simulate', 
+        gamemode_str: gamemode_str,
+        gamemode,
+        mods,
+        mods_int: ModsToInt(mods),
+        is_json: '-j',
+        include: `${path.join(osu_md5_stock, `${md5}.osu`)}`,
+        acc_args,
+        acc
+    });*/
 
     const proc = spawn( calc_exe, [
         'simulate', 
@@ -163,27 +179,6 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         await ActionsController();
     });
 
-}
-
-const calc_result_add = ({md5, md5_int, score, performance_attributes, difficulty_attributes, mods})=> {
-
-    const record = {
-        md5: md5_int,
-        mods: ModsToInt(mods),
-        accuracy: Math.round(score.accuracy),
-        pp_total: Math.round(performance_attributes.pp),
-        pp_aim: Math.round(performance_attributes.aim),
-        pp_speed: Math.round(performance_attributes.speed),
-        pp_accuracy: Math.round(performance_attributes.accuracy),
-        stars: difficulty_attributes.star_rating,
-        diff_aim: difficulty_attributes.aim_difficulty,
-        diff_speed: difficulty_attributes.speed_difficulty,
-        diff_sliders: difficulty_attributes.slider_factor,
-        speed_notes: Math.round(difficulty_attributes.speed_note_count),
-        AR: difficulty_attributes.approach_rate,
-        OD: difficulty_attributes.overall_difficulty,
-    }
-    calculated_chunck_data.push( record );
 }
 
 const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {

@@ -35,6 +35,6 @@ const ModsToInt = (mods) => {
 }
 
 module.exports = {
-    ModsToInt: ModsToInt,
-    IntToMods: IntToMods
+    ModsToInt,
+    IntToMods,
 }

@@ -6,7 +6,7 @@ const { find } = require("../tools/Recommends");
 const { GET_TWITCH_OSU_BIND } = require("../../DB");
 const { irc_say } = require("../tools/ircManager");
 const { parseArgs } = require('../../tools/tools');
-const { ModsToInt } = require('../../osu_pps/osu_mods');
+const { ModsToInt, IntToMods } = require('../../osu_pps/osu_mods');
 
 module.exports = {
     command_name: `recomend`,
@@ -15,12 +15,20 @@ module.exports = {
     command_help: `recomend`,
     command_permission: ALL,
     action: async ({channelname, tags, comargs})=>{
-        
+
         const args = parseArgs(comargs, '-');
 
         let n = 1;
         if (args.n){
             n = parseInt(args.n)
+
+            if (n > 10) {
+                n = 10
+            }
+
+            if (isNaN(n) || n < 1){
+                n = 1;
+            }
         }
 
         const acc_default = 100;
@@ -37,37 +45,55 @@ module.exports = {
         let pp = pp_default;
         if (args.pp){
             pp = parseInt(args.pp);
+            if (isNaN(pp) || pp < 1) {
+                pp = pp_default;
+            }
         }
 
         const pp_diff_default = 10;
         let pp_diff = pp_diff_default;
         if (args.pp_diff){
             pp_diff = parseInt(args.pp_diff);
+            if (isNaN(pp_diff) || pp_diff < 1) {
+                pp_diff = pp_diff_default;
+            }
         }
 
         
         let pp_min = Math.floor(pp - pp_diff * 0.5);
         if (args.pp_min){
             pp_min = parseInt(args.pp_min);
+            if (isNaN(pp_min) || pp_min < 1) {
+                pp_min = Math.floor(pp - pp_diff * 0.5);
+            }
         }
 
         let pp_max = Math.floor(pp + pp_diff * 0.5);
         if (args.pp_max){
             pp_max = parseInt(args.pp_max);
+            if (isNaN(pp_max) || pp_max < 1) {
+                pp_max = Math.floor(pp + pp_diff * 0.5);
+            }
         }
 
         let aim = null
         if (args.aim){
             aim = Number(args.aim);
+            if (isNaN(aim)) {
+                aim = null
+            }
         }
 
         let speed = null
         if (args.speed){
             speed = Number(args.speed);
+            if (isNaN(speed)) {
+                speed = null
+            }
         }
 
         let mods_int = ModsToInt([]);
-        if (args.speed){
+        if (args.mods){
             mods_int = ModsToInt(args.mods.split('+'))
         }
 
@@ -120,11 +146,12 @@ module.exports = {
 }
 
 const formatBeatmapInfoOsu = (username, { beatmap_id, beatmapset_id, artist, title, pp_total, pp_aim, pp_speed, pp_accuracy, accuracy, mods }) => {
-    
-    const url = `[https://osu.ppy.sh/beatmapsets/${beatmapset_id}#osu/${beatmap_id} ${artist} - ${title}] >`;
-    const pp = `${accuracy}% > ${pp_total}pp | aim: ${pp_aim}pp | speed: ${pp_speed}pp | accuracy: ${pp_accuracy}pp`;
+    const url = `[https://osu.ppy.sh/beatmapsets/${beatmapset_id}#osu/${beatmap_id} ${artist} - ${title}]`;
+    const acc = `${accuracy}%`;
+    const pp = `${pp_total}pp | aim: ${pp_aim}pp | speed: ${pp_speed}pp | accuracy: ${pp_accuracy}pp`;
+    const mods_str = IntToMods(mods).join('+');
 
-    return `${username} > ${url} ${pp}`;
+    return [username, url, mods_str, acc, pp].join(' > ');
 }
 
 const formatMap = ({ beatmap_id, beatmapset_id, artist, title, 
@@ -132,8 +159,9 @@ const formatMap = ({ beatmap_id, beatmapset_id, artist, title,
 
     return [
         `${artist} - ${title}`,
-        `AR: ${AR}`,
-        `OD: ${OD}`,
+        IntToMods(mods).join('+'),
+        `AR: ${AR.toFixed(1)}`,
+        `OD: ${OD.toFixed(1)}`,
         `${accuracy}%=${pp_total}pp`, 
         `aim=${pp_aim}pp`,
         `speed=${pp_speed}pp`,

@@ -13,8 +13,7 @@ const log = require("./tools/log.js");
 const main = async () => {
 
     await prepareDB();
-    //await twitchchat_init();
-    await beatmaps_db.init();
+    await twitchchat_init();
     
     init_osu_irc();
     
@@ -23,7 +22,8 @@ const main = async () => {
 
     log('запуск событий чата', 'initialisation');
     twitchchat_load_events();
-
+    
+    await beatmaps_db.init();
 }
 
 main();

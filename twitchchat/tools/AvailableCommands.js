@@ -2,6 +2,9 @@ const { readdirSync } = require('fs');
 const log  = require('../../tools/log');
 const { select_mysql_model } = require('../../DB/defines');
 
+const command_aliases = select_mysql_model('command_aliases');
+const custom_commands = select_mysql_model('custom_commands');
+
 this.commands = [];
 
 module.exports = {
@@ -13,7 +16,7 @@ module.exports = {
 
         for (const command_file of command_files){
             log('Загрузка команды: ' + command_file ,'Twitch Commands');
-            const { command_aliases, command_description, command_name, command_help, command_permission } = require(`../commands/${command_file}`);
+            const { command_aliases, command_description, command_name, command_help, command_permission, action } = require(`../commands/${command_file}`);
 
             this.commands.push({
                 filename: command_file,
@@ -21,7 +24,8 @@ module.exports = {
                 desc: command_description,
                 alias: command_aliases,
                 help: command_help,
-                permission: command_permission
+                permission: command_permission,
+                action
             });
         }
 
@@ -29,23 +33,23 @@ module.exports = {
 
     runCommand: async (requested_command, args) => {
         for (const command of this.commands){
-            if (command.alias.includes(requested_command)){
+            if (command.alias.indexOf(requested_command) > -1){
                 if (args.user_permission <= command.permission){
-                    return (await (require(`../commands/${command.filename}`)).action(args));
+                    return await command.action(args);
                 } else {
                     return {permission: `Запрещено выполнить команду`}
                 }
             }
         }
-        const command_aliases = select_mysql_model('command_aliases');
+
         const custom_command_names = await command_aliases.findAll({ raw: true, logging: false });
+        
         for (let {name, command_id} of custom_command_names){
             if (name === requested_command){
-                const custom_commands = select_mysql_model('custom_commands');
                 const commands = await custom_commands.findAll({ where: { id: command_id }, logging: false, raw: true });
                 for (let command of commands){
                     if (command.id === command_id && command.channelname === args.channelname){
-                        return {success: command.text }
+                        return {success: command.text}
                     }
                 }
             }
