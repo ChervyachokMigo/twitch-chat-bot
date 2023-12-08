@@ -75,7 +75,7 @@ module.exports = {
 
         try {
             if (typeof values.length !== 'undefined' && values.length > 0){
-                return await MysqlModel.bulkCreate(values, {logging: false, ignoreDuplicates: true})
+                return await MysqlModel.bulkCreate(values, {logging: false, ignoreDuplicates: true});
             } else {
                 return (await MysqlModel.upsert(values, { where: keys, logging: false, raw: true })).shift();
             }

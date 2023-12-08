@@ -10,15 +10,14 @@ const save_calculated_data = async () => {
 
     if (recorded_calculations.length > 0){
         
-        console.log( 'calc > save to mysql >', recorded_calculations.length ,'records');
+        //console.log( 'calc > save to mysql >', recorded_calculations.length ,'records');
         await MYSQL_SAVE('osu_beatmap_pp', 0, recorded_calculations );
         
     }
 }
 
-const calc_result_add = ({md5, md5_int, score, performance_attributes, difficulty_attributes, mods})=> {
-
-    const record = {
+const calc_result_add = ({md5_int, score, performance_attributes, difficulty_attributes, mods}) => {
+    calculated_chunck_data.push({
         md5: md5_int,
         mods: ModsToInt(mods),
         accuracy: Math.round(score.accuracy),
@@ -33,8 +32,7 @@ const calc_result_add = ({md5, md5_int, score, performance_attributes, difficult
         speed_notes: Math.round(difficulty_attributes.speed_note_count),
         AR: difficulty_attributes.approach_rate,
         OD: difficulty_attributes.overall_difficulty,
-    }
-    calculated_chunck_data.push( record );
+    });
 }
 
 const calc_result_parse = ({last_command, data}) => {

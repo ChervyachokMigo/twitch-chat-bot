@@ -16,6 +16,7 @@ const { powershell_call } = require("../powershell.js");
 const { save_calculated_data, calculated_data_length, calc_result_add } = require("./calc_data_saver.js");
 
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
+const calc_dll = path.join('P:\\PerformanceCalculator.dll');
 
 const ranked_status = {
     ranked: 4
@@ -23,8 +24,13 @@ const ranked_status = {
 
 const mysql_chunk_size = 500;
 
+//20 - 47, 1:33
+//15 - 48
+//12 - 46, 1:34
+//10 - 49, 1:39
+
 const setting_MaxExecuting = 10;
-const setting_StartExecuting = 6;
+const setting_StartExecuting = 10;
 
 let maxExecuting = setting_StartExecuting;
 
@@ -53,8 +59,9 @@ const kill_process = (appName) => {
     execSync(`taskkill /im ${appName} /F`);
 }
 
-
-
+const beatmap_ids = select_mysql_model('beatmap_id');
+const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
 const ActionsController =  async () => {
 
@@ -75,6 +82,7 @@ const ActionsController =  async () => {
 
         if( actions_max > 0 ){
             console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
+            console.timeLog('calc');
         }
 
         return;
@@ -85,6 +93,7 @@ const ActionsController =  async () => {
         
         if (actions_max > 0 ){
             console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
+            console.timeLog('calc');
         }
     }
 
@@ -97,20 +106,15 @@ const ActionsController =  async () => {
             break;
         }
     }
-
-
 }
 
 const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
 
-    const gamemode_str = Gamemodes[gamemode];
+    /*let acc_args = `-a ${acc}`;
 
-    let acc_args = `-a ${acc}`;
-
-    if (gamemode_str === 'mania'){
+    if (gamemode === 3){
         acc_args = `-s ${acc*10000}`
-    };
-
+    };*/
 
     /*powershell_call({
         path: calc_exe, 
@@ -125,19 +129,17 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         acc
     });*/
 
-    const proc = spawn( calc_exe, [
+    const proc = spawn( 'dotnet', [
+        calc_dll,
         'simulate', 
-        gamemode_str,
+        Gamemodes[gamemode],
         ...mods.length > 0? mods.map( x => `-m ${x}`): ['-m CL'],
         '-j',
         `${path.join(osu_md5_stock, `${md5}.osu`)}`,
-        acc_args,
+        `-a ${acc}`,
     ], {windowsHide: true});
     
-
-
     let result = '';
-    let error = '';
 
     proc.stdout.on('data', (data) => {
         if (data.length > 0){
@@ -148,13 +150,16 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
     proc.stdout.on('close', async () =>{
         if (result.length > 0){
             try{
-                let data = JSON.parse(result);
-                calc_result_add ({ md5, md5_int, ...data, mods });
+                calc_result_add ({ md5_int, ...JSON.parse(result), mods });
             } catch (e){
                 console.error(`calc > error > something wrong with beatmap ${md5}.osu`);
             }
         }
     });
+
+   /* 
+   
+    let error = '';
 
     proc.stderr.on('data', async (data) => {
         if (data.length > 0){
@@ -165,14 +170,14 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
     proc.stderr.on('close', async () => {
         if (error.length > 0){
             console.error(error);
-            /*try{
+            try{
                 fs.copyFileSync( path.join(osu_md5_stock, `${md5}.osu`), path.join( __dirname, '..\\data\\osu_pps\\calc_error\\', `${md5}.osu`) )
             } catch (e){
                 console.error(`calc > error > can not copy ${md5}.osu`)
-            }*/
+            }
             beatmaps_failed.push(md5);
         }
-    });
+    });*/
 
     proc.on('exit', async () => {
         this.current_actions--;
@@ -182,8 +187,6 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
 }
 
 const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
-    const beatmap_ids = select_mysql_model('beatmap_id');
-    const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
     return await beatmap_ids.findAll( {
         where: {
@@ -212,17 +215,20 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
 const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked, is_key_events = false) => {
     await prepareDB();
     
-    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked)).sort ( (a, b) => a.md5.localeCompare(b.md5) );
+    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked))
+    .sort ( (a, b) => a.md5.localeCompare(b.md5) );
 
     if (is_key_events){
         init_key_events();
     }
 
-    for (let action_args of actions){
+    for (let action_args of actions()){
         await init_calc_action(beatmaps_data, action_args);
+
         console.log(`calc complete > ${action_args.acc}% ${action_args.mods.join('+')}`);
 
         let beatmaps_results = await download_by_md5_list(beatmaps_failed);
+
         for (let {error, data, md5} of beatmaps_results){
             if (error){
                 console.log(error);
@@ -314,8 +320,6 @@ const init_key_events = () => {
 }
 
 const get_beatmap_pps_by_mods_and_acc = async (condition) => {
-    const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
-    const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
     return await osu_beatmap_pp.findAll( {
         where: condition,
@@ -340,7 +344,7 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
 
     const mods_int = ModsToInt(mods);
 
-    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc({ mods: mods_int, accuracy: Number(acc) });
+    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc({ mods: mods_int, accuracy: acc });
 
     const calculated_set = new Set( calculated_osu_beatmaps.map( (x) =>`${x.md5_int}:${x.accuracy}:${x.mods}` ));
 
@@ -379,6 +383,7 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
     ended_count = null;
 
     if (this.current_actions < maxExecuting){
+        console.time('calc');
         await ActionsController();
     }
 
