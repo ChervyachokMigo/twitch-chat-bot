@@ -15,6 +15,8 @@ const { get_beatmap_id, GetGamemodeToInt, Gamemodes } = require("../DB/beatmaps"
 const { powershell_call } = require("../powershell.js");
 const { save_calculated_data, calculated_data_length, calc_result_add } = require("./calc_data_saver.js");
 
+const recomend_command = require('../twitchchat/commands/recomend.js');
+
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 const calc_dll = path.join('P:\\PerformanceCalculator.dll');
 
@@ -82,7 +84,6 @@ const ActionsController =  async () => {
 
         if( actions_max > 0 ){
             console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
-            console.timeLog('calc');
         }
 
         return;
@@ -93,7 +94,6 @@ const ActionsController =  async () => {
         
         if (actions_max > 0 ){
             console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
-            console.timeLog('calc');
         }
     }
 
@@ -212,7 +212,7 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
     });
 }
 
-const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked, is_key_events = false) => {
+const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked, is_key_events = true) => {
     await prepareDB();
     
     const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked))
@@ -259,6 +259,13 @@ const init_key_events = () => {
 
 
     process.stdin.on('keypress', async (ch, key) => {
+        if (key && key.name == 'r') {
+            console.log('sended requests');
+            let request_bind_json = JSON.parse(fs.readFileSync('./bind_recommend_maps.json', {encoding: 'utf8'}));
+            request_bind_json.comargs = request_bind_json.comargs.trim().split(' ');
+            await recomend_command.action(request_bind_json);
+        }
+
         if (key && key.name == 'q' && next_actions.length > 0 && this.current_actions > 0) {
             let completed = actions_max - next_actions.length;
             let last_action_date = new Date();
@@ -284,19 +291,19 @@ const init_key_events = () => {
                 console.log('Возобновление');
                 await ActionsController();
             }
-            console.log('Количество прроцессов уменьшено до', maxExecuting);
+            console.log('Количество процессов уменьшено до', maxExecuting);
         }
 
         if (key && key.name == 'a' && maxExecuting > 1 ) {
             maxExecuting = maxExecuting - 1;
             console.log('<----------------------------------------------------------------->');
-            console.log('Количество прроцессов уменьшено на', 1);
+            console.log('Количество процессов уменьшено на', 1);
             console.log('Сейчас выполняется:\t', maxExecuting);
         }
         if (key && key.name == 's' && maxExecuting < setting_MaxExecuting ) {
             maxExecuting = maxExecuting + 1;
             console.log('<----------------------------------------------------------------->');
-            console.log('Количество прроцессов увеличено на', 1);
+            console.log('Количество процессов увеличено на', 1);
             console.log('Сейчас выполняется:\t', maxExecuting);
         }
         if (key && key.name == 'e' ) {
@@ -383,12 +390,14 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
     ended_count = null;
 
     if (this.current_actions < maxExecuting){
-        console.time('calc');
         await ActionsController();
     }
 
+
     return await new Promise (res => setInterval( () => { if(ended_count === 0 || ended_count < 0) { res(true)} }, 1000 ));
 }
+
+
 
 module.exports = {
     init_calc_action,

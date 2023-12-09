@@ -1,0 +1,8 @@
+{
+    "channelname": "sed_god",
+    "tags": {
+        "username": "sed_god",
+        "user-id": "478880338"
+    },
+    "comargs": "-n 10 -pp 125 -mods EZ -acc 99"
+}
