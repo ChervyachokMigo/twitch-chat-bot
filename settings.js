@@ -6,4 +6,8 @@ module.exports = {
 
     stalkerChatRefreshRate: 10,
 
+    mysql_chunk_size: 500,
+    calc_MaxExecuting: 10,
+    calc_StartExecuting: 10,
+    is_key_events: true
 }

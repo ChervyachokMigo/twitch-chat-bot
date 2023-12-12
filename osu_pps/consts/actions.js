@@ -5,13 +5,24 @@ const mods_pattern = [
     ['', 'HR', 'EZ']    //speed
 ];
 
+const skip = [
+    '',
+    'HD', 'DT', 'HT', 'HR', 'EZ',
+    'DTHR', 'DTEZ'
+];
+
 module.exports = () => {
     let all_mods = [];
 
     for (let mod_1 of mods_pattern[0]){
         for (let mod_2 of mods_pattern[1]){
             for (let mod_3 of mods_pattern[2]){
-                all_mods.push( [mod_1, mod_2, mod_3].filter(Boolean) );
+                let mods = [mod_1, mod_2, mod_3].filter(Boolean);
+                if (skip.indexOf(mods.join('')) === -1){
+                    all_mods.push( mods );
+                } else {
+                    console.log('skipped mods:', mods.join(''));
+                }
             }
         }
     }

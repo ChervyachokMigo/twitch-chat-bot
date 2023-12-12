@@ -8,7 +8,13 @@ const { prepareDB, select_mysql_model } = require("../DB/defines.js");
 const { ModsToInt } = require('./osu_mods');
 const { MYSQL_SAVE, MYSQL_GET_ALL } = require("../DB/base");
 
-const { osu_md5_stock } = require("../settings");
+const { osu_md5_stock, 
+    mysql_chunk_size, 
+    calc_MaxExecuting, 
+    calc_StartExecuting,
+    is_key_events
+} = require("../settings");
+
 const { download_by_md5_list } = require("./download_beatmaps_diffs");
 const actions = require("./consts/actions");
 const { get_beatmap_id, GetGamemodeToInt, Gamemodes } = require("../DB/beatmaps");
@@ -20,21 +26,18 @@ const recomend_command = require('../twitchchat/commands/recomend.js');
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 const calc_dll = path.join('P:\\PerformanceCalculator.dll');
 
+const bind_recommend_maps = './bind_recommend_maps.json';
+
 const ranked_status = {
     ranked: 4
 }
-
-const mysql_chunk_size = 500;
 
 //20 - 47, 1:33
 //15 - 48
 //12 - 46, 1:34
 //10 - 49, 1:39
 
-const setting_MaxExecuting = 10;
-const setting_StartExecuting = 10;
-
-let maxExecuting = setting_StartExecuting;
+let maxExecuting = calc_StartExecuting;
 
 let next_actions = [];
 this.current_actions = 0;
@@ -212,7 +215,7 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
     });
 }
 
-const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked, is_key_events = true) => {
+const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) => {
     await prepareDB();
     
     const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked))
@@ -261,7 +264,7 @@ const init_key_events = () => {
     process.stdin.on('keypress', async (ch, key) => {
         if (key && key.name == 'r') {
             console.log('sended requests');
-            let request_bind_json = JSON.parse(fs.readFileSync('./bind_recommend_maps.json', {encoding: 'utf8'}));
+            let request_bind_json = JSON.parse(fs.readFileSync(bind_recommend_maps, {encoding: 'utf8'}));
             request_bind_json.comargs = request_bind_json.comargs.trim().split(' ');
             await recomend_command.action(request_bind_json);
         }
@@ -287,7 +290,7 @@ const init_key_events = () => {
                 maxExecuting = 0;
                 console.log('Пауза');
             } else {
-                maxExecuting = setting_StartExecuting;
+                maxExecuting = calc_StartExecuting;
                 console.log('Возобновление');
                 await ActionsController();
             }
@@ -300,7 +303,7 @@ const init_key_events = () => {
             console.log('Количество процессов уменьшено на', 1);
             console.log('Сейчас выполняется:\t', maxExecuting);
         }
-        if (key && key.name == 's' && maxExecuting < setting_MaxExecuting ) {
+        if (key && key.name == 's' && maxExecuting < calc_MaxExecuting ) {
             maxExecuting = maxExecuting + 1;
             console.log('<----------------------------------------------------------------->');
             console.log('Количество процессов увеличено на', 1);
