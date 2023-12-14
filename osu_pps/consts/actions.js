@@ -8,7 +8,7 @@ const mods_pattern = [
 const skip = [
     '',
     'HD', 'DT', 'HT', 'HR', 'EZ',
-    'DTHR', 'DTEZ'
+    'DTHR', 'DTEZ', 'HTHR', 'HTEZ', 'HDHR', 'HDEZ', 'HDDT', 
 ];
 
 module.exports = () => {
