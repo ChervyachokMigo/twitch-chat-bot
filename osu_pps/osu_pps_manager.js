@@ -12,10 +12,14 @@ const { calc_from_mysql } = require("./beatmaps_pp_calc.js");
 const get_beatmap_by_md5 = require('./get_beatmap_by_md5');
 const { export_osu_beatmap_pp_csv, pack, export_any_table_csv } = require('./backup/mysql_export.js');
 
+const export_osu_pps = async () => {
+    await export_osu_beatmap_pp_csv();
+    await pack();
+}
+
 const main = async () => {
     //await calc_from_mysql('osu', 4, true);
-    //await export_osu_beatmap_pp_csv()
-    //await pack()
+    await export_osu_pps()
     //await export_any_table_csv('beatmap_data')
 }
 

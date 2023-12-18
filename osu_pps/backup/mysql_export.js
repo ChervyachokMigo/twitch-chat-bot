@@ -27,7 +27,7 @@ const save_csv = (values, filename) => {
 const export_osu_beatmap_pp_csv = async () => {
     await prepareDB();
 
-    for (let {acc, mods} of actions){
+    for (let {acc, mods}  of actions(false)){
         
         const mods_int = ModsToInt(mods);
 

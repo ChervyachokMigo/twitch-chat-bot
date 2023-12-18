@@ -9,5 +9,7 @@ module.exports = {
     mysql_chunk_size: 500,
     calc_MaxExecuting: 10,
     calc_StartExecuting: 10,
-    is_key_events: true
+    is_key_events: true,
+    
+    is_skip_check: true,
 }

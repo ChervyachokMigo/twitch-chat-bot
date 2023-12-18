@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js --inspect"
+    "start": "node index.js --inspect",
+    "manager": "node osu_pps/osu_pps_manager.js"
   },
   "keywords": [],
   "author": "",

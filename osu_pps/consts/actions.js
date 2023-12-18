@@ -1,27 +1,24 @@
-const acc_pattern = [98, 99, 100];
-const mods_pattern = [
-    ['', 'HD'],         //reading
-    ['', 'DT', 'HT'],   //timing
-    ['', 'HR', 'EZ']    //speed
-];
+const settings = require("../../settings");
 
-const skip = [
-    '',
-    'HD', 'DT', 'HT', 'HR', 'EZ',
-    'DTHR', 'DTEZ', 'HTHR', 'HTEZ', 'HDHR', 'HDEZ', 'HDDT', 
-];
+const skip_mods = require("./skip_mods");
 
-module.exports = () => {
+const pattern = require("./action_pattern");
+
+module.exports = (is_skip_check = settings.is_skip_check) => {
     let all_mods = [];
 
-    for (let mod_1 of mods_pattern[0]){
-        for (let mod_2 of mods_pattern[1]){
-            for (let mod_3 of mods_pattern[2]){
+    for (let mod_1 of pattern.mods[0]){
+        for (let mod_2 of pattern.mods[1]){
+            for (let mod_3 of pattern.mods[2]){
                 let mods = [mod_1, mod_2, mod_3].filter(Boolean);
-                if (skip.indexOf(mods.join('')) === -1){
-                    all_mods.push( mods );
+                if (is_skip_check){
+                    if(skip_mods.indexOf(mods.join('')) === -1){
+                        all_mods.push( mods );
+                    } else {
+                        console.log('skipped mods:', mods.join(''));
+                    }
                 } else {
-                    console.log('skipped mods:', mods.join(''));
+                    all_mods.push( mods );
                 }
             }
         }
@@ -32,7 +29,7 @@ module.exports = () => {
     let results = [];
 
     for (let mods of all_mods){
-        for (let acc of acc_pattern){
+        for (let acc of pattern.acc){
             results.push({acc, mods});
         }
     }
