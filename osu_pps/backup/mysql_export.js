@@ -8,7 +8,7 @@ const { ModsToInt } = require("../osu_mods.js");
 const { writeFileSync, readdirSync } = require("fs");
 const { spawnSync } = require("child_process");
 
-const backup_path = path.join(__dirname, '../../data/osu_pps/mysql_backups');
+const backup_path = path.join(__dirname, '../../data/mysql_backups');
 
 const save_csv = (values, filename) => {
     if (values.length > 0){

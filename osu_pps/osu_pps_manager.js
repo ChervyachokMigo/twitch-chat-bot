@@ -14,13 +14,17 @@ const { export_osu_beatmap_pp_csv, pack, export_any_table_csv } = require('./bac
 
 const export_osu_pps = async () => {
     await export_osu_beatmap_pp_csv();
+    await export_any_table_csv('beatmap_id');
+    await export_any_table_csv('beatmaps_md5');
+    await export_any_table_csv('beatmap_info');
+    await export_any_table_csv('beatmap_star');
     await pack();
 }
 
 const main = async () => {
     //await calc_from_mysql('osu', 4, true);
     await export_osu_pps()
-    //await export_any_table_csv('beatmap_data')
+    
 }
 
 main();
