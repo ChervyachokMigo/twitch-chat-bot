@@ -82,6 +82,6 @@ const md5_stock_compare = () => {
 }
 
 module.exports = {
-    make_beatmaps_db: make_beatmaps_db,
-    md5_stock_compare: md5_stock_compare
+    make_beatmaps_db,
+    md5_stock_compare
 }

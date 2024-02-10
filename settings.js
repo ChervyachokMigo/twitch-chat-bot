@@ -1,6 +1,6 @@
 module.exports = {
 
-    osu_md5_stock: 'D:\\osu_md5_stock',
+    osu_md5_stock: 'C:\\osu_md5_stock',
 
     osuPath: `D:\\osu!`,
 

@@ -11,7 +11,8 @@ const { setInfinityTimerLoop } = require("./tools/tools.js");
 const log = require("./tools/log.js");
 
 const main = async () => {
-
+    process.title = 'twitch_chat_bot';
+    
     await prepareDB();
     await twitchchat_init();
     

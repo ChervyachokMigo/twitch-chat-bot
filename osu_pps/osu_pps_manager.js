@@ -22,7 +22,7 @@ const export_osu_pps = async () => {
 }
 
 const main = async () => {
-    //await calc_from_mysql('osu', 4, true);
+    //await calc_from_mysql();
     await export_osu_pps()
     
 }

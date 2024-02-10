@@ -58,23 +58,27 @@ const export_any_table_csv = async (tablename) => {
     console.log('export complete.');
 }
 
-const pack = async (tablename) => {
-    console.log('creating archive csv files');
+const pack = async (tablename = 'mysql_backups') => {
 
-    const now = new Date()
+    const now = new Date();
 
     const filename =  `${tablename}-${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.7z`;
-    var command = '7z/7za.exe';
-    var args2 = [ 
-        'a',
-        '-y',
-        '-mx9',
-        path.join(backup_path, filename),
-        `${path.join(backup_path, '\\', '*.csv')}`
-    ];
-    const {stdout, stderr} = spawnSync(command, args2, {encoding: 'utf8'});
+    const archive_name = path.join(backup_path, filename);
+    const files_pattern = path.join(backup_path, '\\', '*.csv');
 
-    console.log(stdout, stderr)
+    console.log('creating archive csv files:', filename);
+
+    const exe = 'bin/7z.exe';
+    const args = [ 
+        'a',    //add files
+        '-y',   //assume yes
+        '-mx9', //compression level
+        archive_name,
+        files_pattern
+    ];
+    const {stdout, stderr} = spawnSync(exe, args, {encoding: 'utf8'});
+
+    console.log(stdout, stderr);
 }
 
 module.exports = {

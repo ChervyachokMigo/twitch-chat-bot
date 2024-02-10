@@ -26,6 +26,7 @@
     "minimist": "^1.2.8",
     "mysql2": "^3.6.5",
     "node-irc": "^0.0.5",
+    "node-windows": "^1.0.0-beta.8",
     "os": "^0.1.2",
     "os-utils": "^0.0.14",
     "osu-api-extended": "^2.7.67",
