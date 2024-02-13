@@ -36,12 +36,11 @@ module.exports = {
         }    
     },
 
-    MYSQL_UPDATE: async (action, values) => {
+    MYSQL_UPDATE: async (action, condition, values) => {
         const MysqlModel = select_mysql_model(action);
-        var save_values = {};
 
         try{
-            return await updateAll(MysqlModel, {guildid: values.guildid}, save_values );
+            return await updateAll(MysqlModel, condition, values );
         } catch (e){
             if (e.code === 'ECONNREFUSED' || e.name === `SequelizeConnectionRefusedError`){
                 throw new Error(`Нет доступа к базе данных.`);
