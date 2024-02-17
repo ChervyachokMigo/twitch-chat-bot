@@ -8,7 +8,7 @@ const { prepareDB, select_mysql_model } = require("../DB/defines.js");
 const { ModsToInt } = require('./osu_mods');
 const { MYSQL_SAVE, MYSQL_GET_ALL } = require("../DB/base");
 
-const { osu_md5_stock, 
+const { osu_md5_storage, 
     mysql_chunk_size, 
     calc_MaxExecuting, 
     calc_StartExecuting,
@@ -127,7 +127,7 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         mods,
         mods_int: ModsToInt(mods),
         is_json: '-j',
-        include: `${path.join(osu_md5_stock, `${md5}.osu`)}`,
+        include: `${path.join(osu_md5_storage, `${md5}.osu`)}`,
         acc_args,
         acc
     });*/
@@ -138,7 +138,7 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         Gamemodes[gamemode],
         ...mods.length > 0? mods.map( x => `-m ${x}`): ['-m CL'],
         '-j',
-        `${path.join(osu_md5_stock, `${md5}.osu`)}`,
+        `${path.join(osu_md5_storage, `${md5}.osu`)}`,
         `-a ${acc}`,
     ], {windowsHide: true});
     
@@ -174,7 +174,7 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         if (error.length > 0){
             console.error(error);
             try{
-                fs.copyFileSync( path.join(osu_md5_stock, `${md5}.osu`), path.join( __dirname, '..\\data\\osu_pps\\calc_error\\', `${md5}.osu`) )
+                fs.copyFileSync( path.join(osu_md5_storage, `${md5}.osu`), path.join( __dirname, '..\\data\\osu_pps\\calc_error\\', `${md5}.osu`) )
             } catch (e){
                 console.error(`calc > error > can not copy ${md5}.osu`)
             }
@@ -238,7 +238,7 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
                 continue;
             }
             if (data){
-                fs.writeFileSync(path.join(osu_md5_stock, `${md5}.osu`), data, {encoding: 'utf8'});
+                fs.writeFileSync(path.join(osu_md5_storage, `${md5}.osu`), data, {encoding: 'utf8'});
                 console.log(`saved ${md5}.osu > ${data.length} bytes`);
             }
         }

@@ -3,7 +3,7 @@ const md5File = require('md5-file');
 const fs = require("fs");
 const { globSync } = require( 'glob' );  
 
-const {osu_md5_stock, osuPath} = require('../settings.js');
+const {osu_md5_storage, osuPath} = require('../settings.js');
 
 const beatmaps_md5_db = path.join('data', 'osu_pps', 'beatmaps_md5_db.json');
 
@@ -59,7 +59,7 @@ const md5_stock_compare = () => {
 
     console.log('> md5_stock_compare > checking...');
 
-    const md5s = fs.readdirSync( osu_md5_stock );
+    const md5s = fs.readdirSync( osu_md5_storage );
 
     const beatmaps_db = fs.existsSync( beatmaps_md5_db ) ? 
         JSON.parse( fs.readFileSync( beatmaps_md5_db, {encoding: 'utf8'} )) : 
@@ -73,7 +73,7 @@ const md5_stock_compare = () => {
     const to_copy = difference ( beatmaps_db, md5s );
 
     for (const file of to_copy){
-        fs.copyFileSync( path.join( osuPath, 'Songs', file.fpr ), path.join( osu_md5_stock, `${file.md5}.osu` ) );
+        fs.copyFileSync( path.join( osuPath, 'Songs', file.fpr ), path.join( osu_md5_storage, `${file.md5}.osu` ) );
         console.log('> copy', file.md5);
     }
 

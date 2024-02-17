@@ -3,7 +3,7 @@ const { default: axios } = require('axios');
 const crypto = require('crypto');
 const { writeFileSync } = require('fs');
 const path = require('path');
-const { osu_md5_stock } = require('../settings');
+const { osu_md5_storage } = require('../settings');
 const { get_beatmap_id } = require('../DB/beatmaps');
 
 const download_beatmap_content = async ({ beatmap_id, md5 }, output_path, is_md5_check = true) => {
@@ -43,7 +43,7 @@ module.exports = {
             const { beatmap_id } = await get_beatmap_id({ md5 });
 
             if (beatmap_id) {
-                const result = await download_beatmap_content({ beatmap_id, md5 }, osu_md5_stock );
+                const result = await download_beatmap_content({ beatmap_id, md5 }, osu_md5_storage );
 
                 if (result.data) {
                     results.push({md5, data: result.data});

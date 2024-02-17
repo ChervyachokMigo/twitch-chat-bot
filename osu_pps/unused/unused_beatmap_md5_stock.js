@@ -18,7 +18,7 @@ const md5_stock_calculate = async () => {
         make_beatmaps_db();
 
 
-    const osu_md5_stock_files = fs.readdirSync( osu_md5_stock ).map( x => x.slice(0, x.length - 4 ));
+    const osu_md5_storage_files = fs.readdirSync( osu_md5_storage ).map( x => x.slice(0, x.length - 4 ));
 
     const calculated_files = fs.readdirSync( calculated_jsons_path ).map( x => x.slice(0, x.length - 5 ));
 
@@ -32,7 +32,7 @@ const md5_stock_calculate = async () => {
         return a.filter( x => stock.has( x.md5 ) === true );
     }
 
-    const to_calc = difference ( osu_md5_stock_files, calculated_files );
+    const to_calc = difference ( osu_md5_storage_files, calculated_files );
 
     const calced = includes( beatmaps_db, to_calc );
 
@@ -41,7 +41,7 @@ const md5_stock_calculate = async () => {
     let parsed = [];
 
     for (const file of to_parse){
-        const filepath = path.join(osu_md5_stock, `${file}.osu`);
+        const filepath = path.join(osu_md5_storage, `${file}.osu`);
         const data = fs.readFileSync( filepath, {encoding: 'utf8'} );
         const match = data.match( /mode:[ ]*([0-3])/i);
     

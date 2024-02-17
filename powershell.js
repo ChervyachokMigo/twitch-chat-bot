@@ -43,7 +43,7 @@ let last_command = null;
         mods,
         mods_int: ModsToInt(mods),
         is_json: '-j',
-        include: `${path.join(osu_md5_stock, `${md5}.osu`)}`,
+        include: `${path.join(osu_md5_storage, `${md5}.osu`)}`,
         acc_args,
         acc
 */

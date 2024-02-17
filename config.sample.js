@@ -10,6 +10,7 @@ module.exports = {
     DB_PASSWORD: ``, 
     DB_NAME: `zxcbot`,
     DB_NAME_BEATMAPS: 'osu_beatmaps',
+    DB_NAME_TWITCHCHAT: 'twitchchat',
 
     TWITCHCHAT_ROUTER_PORT: 7896,
 
@@ -17,3 +18,7 @@ module.exports = {
 
     osu_irc_args: ['irc.ppy.sh', 6667, '', '']
 }
+
+// to get token
+//https://id.twitch.tv/oauth2/authorize?client_id=<client_id>&redirect_uri=http://localhost:3000&response_type=token&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls
+//https://id.twitch.tv/oauth2/token?client_id=<client_id>&redirect_uri=http://localhost:3000&client_secret=<client_secret>&code=<code>&grant_type=authorization_code
