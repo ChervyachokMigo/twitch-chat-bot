@@ -196,7 +196,6 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
             gamemode: GetGamemodeToInt(gamemode), ranked: status
         },
         raw: true,
-        logging: false,
 
         include: [beatmaps_md5],
 
@@ -334,7 +333,6 @@ const get_beatmap_pps_by_mods_and_acc = async (condition) => {
     return await osu_beatmap_pp.findAll( {
         where: condition,
         raw: true,
-        logging: false,
 
         include: [beatmaps_md5],
 

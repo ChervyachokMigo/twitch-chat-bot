@@ -4,13 +4,28 @@ const log  = require("../tools/log.js");
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_NAME_BEATMAPS, DB_NAME_TWITCHCHAT } = require("../config.js");
 
-const osu_beatmaps_mysql = new Sequelize( DB_NAME_BEATMAPS, DB_USER, DB_PASSWORD, { 
+const mysql = new Sequelize( DB_NAME, DB_USER, DB_PASSWORD, { 
     dialect: `mysql`,
+	host: DB_HOST,
+	port: DB_PORT, 
     define: {
         updatedAt: false,
         createdAt: false,
         deletedAt: false
     },
+	logging: false,
+});
+
+const osu_beatmaps_mysql = new Sequelize( DB_NAME_BEATMAPS, DB_USER, DB_PASSWORD, { 
+    dialect: `mysql`,
+	host: DB_HOST,
+	port: DB_PORT, 
+    define: {
+        updatedAt: false,
+        createdAt: false,
+        deletedAt: false
+    },
+	logging: false,
 });
 
 const beatmaps_md5 = osu_beatmaps_mysql.define ('beatmaps_md5', {
@@ -40,7 +55,7 @@ const beatmap_id = osu_beatmaps_mysql.define ('beatmap_id', {
     beatmapset_id: {type: DataTypes.INTEGER,  defaultvalue: 0, allowNull: false},
     gamemode: {type: DataTypes.TINYINT.UNSIGNED,  defaultvalue: '', allowNull: false},
     ranked: {type: DataTypes.TINYINT,  defaultvalue: 0, allowNull: false},
-}, {noPrimaryKey: false});
+});
 
 const beatmap_info = osu_beatmaps_mysql.define ('beatmap_info', {
     md5: {type: DataTypes.INTEGER,  defaultvalue: 0, allowNull: false, unique: true, primaryKey: true},
@@ -48,13 +63,13 @@ const beatmap_info = osu_beatmaps_mysql.define ('beatmap_info', {
     title: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
     creator: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
     difficulty: {type: DataTypes.STRING,  defaultvalue: '', allowNull: false},
-}, {noPrimaryKey: false});
+});
 
 const beatmap_star = osu_beatmaps_mysql.define ('beatmap_star', {
     md5: {type: DataTypes.INTEGER,  defaultvalue: 0, allowNull: false, unique: true, primaryKey: true},
     local: {type: DataTypes.FLOAT,  defaultvalue: 0, allowNull: false},
     lazer: {type: DataTypes.FLOAT,  defaultvalue: 0, allowNull: false},
-}, {noPrimaryKey: false});
+});
 
 beatmaps_md5.hasMany(osu_beatmap_pp, {foreignKey: 'md5',  foreignKeyConstraints: false});
 beatmap_id.hasMany(osu_beatmap_pp, {foreignKey: 'md5',  foreignKeyConstraints: false});
@@ -64,14 +79,6 @@ beatmaps_md5.hasOne(beatmap_id, {foreignKey: 'md5',  foreignKeyConstraints: fals
 beatmaps_md5.hasOne(beatmap_info, {foreignKey: 'md5',  foreignKeyConstraints: false});
 beatmaps_md5.hasOne(beatmap_star, {foreignKey: 'md5',  foreignKeyConstraints: false});
 
-const mysql = new Sequelize( DB_NAME, DB_USER, DB_PASSWORD, { 
-    dialect: `mysql`,
-    define: {
-        updatedAt: false,
-        createdAt: false,
-        deletedAt: false
-    },
-});
 
 const Token = mysql.define ('token', {
     value: {type: DataTypes.TEXT,  defaultvalue: '', allowNull: false},
@@ -153,6 +160,7 @@ const mysql_actions = [
 
 
 module.exports = {
+	mysql_actions, 
     prepareDB: async () => {
         log('Подготовка баз данных', 'База данных');
         try {
@@ -167,9 +175,9 @@ module.exports = {
                 throw new Error(`ошибка базы: ${e}`);
             }
         }
-        await osu_beatmaps_mysql.sync({ logging: false })
-        await mysql.sync({ logging: false })
-        await twitchchat.sync({ logging: false, alter: true })
+        await osu_beatmaps_mysql.sync()
+        await mysql.sync()
+        await twitchchat.sync()
 
         log(`Подготовка завершена`, 'База данных')
     },

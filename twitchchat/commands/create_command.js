@@ -21,7 +21,6 @@ module.exports = {
             let response = (await custom_commands.findOrCreate({ 
                 where: req,
                 defaults: { text, perm: PermissionToInt(perm) },
-                logging: false,
                 raw: false,
             }))
 
@@ -29,7 +28,7 @@ module.exports = {
             const is_created = response.shift();
 
             if (is_created === false) {
-                await custom_commands.update({ text, perm: PermissionToInt(perm) }, { where: req, logging: false });
+                await custom_commands.update({ text, perm: PermissionToInt(perm) }, { where: req });
             }
 
             for (let name of names.trim().split(' ') ) {
@@ -37,7 +36,6 @@ module.exports = {
 
                 await command_aliases.findOrCreate({ 
                     where: { command_id: command.id, name },
-                    logging: false
                 });
 
             }

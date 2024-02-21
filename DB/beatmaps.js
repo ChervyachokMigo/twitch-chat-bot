@@ -36,7 +36,7 @@ let beatmaps_md5_cache = null;
 const init_md5_cache = async () => {
     
     //await import_md5_csv ('data\\osu_pps\\mysql_backups\\beatmap_data.csv');
-    beatmaps_md5_cache = await beatmaps_md5.findAll({ raw: true, logging: false });
+    beatmaps_md5_cache = await beatmaps_md5.findAll({ raw: true });
 
     //await import_beatmap_info_csv ('data\\osu_pps\\mysql_backups\\beatmap_data.csv');
     //await import_beatmap_ids_csv ('data\\osu_pps\\mysql_backups\\beatmap_data.csv');
@@ -58,7 +58,6 @@ const get_beatmap_id = async ({ md5 }) => {
             'beatmaps_md5.id': 'md5_int',
         },
 
-        logging: false,
         raw: true, 
     });
 }
@@ -75,7 +74,7 @@ const import_md5_csv = async (filepath) => {
             }
         }
 
-        await beatmaps_md5.bulkCreate(data, { logging: false, ignoreDuplicates: true });
+        await beatmaps_md5.bulkCreate(data, { ignoreDuplicates: true });
     }
 }
 
@@ -112,7 +111,6 @@ const get_beatmap_pps_by_id = async ({ beatmap_id, beatmapset_id, gamemode = 0, 
             'beatmap_info.difficulty': 'difficulty',
         },
 
-        logging: false,
         raw: true, 
     });
 }
@@ -174,7 +172,6 @@ const find_beatmap_pps = async ({ accuracy = 100, gamemode = 0, mods = 0, ranked
             'beatmap_info.difficulty': 'difficulty',
         },
 
-        logging: false,
         raw: true, 
     });
 }
@@ -190,8 +187,7 @@ const get_md5_id = async (hash, returning = true) => {
     }
 
     const result = await beatmaps_md5.findOrCreate({ 
-        where: { hash },
-        logging: false
+        where: { hash }
     });
     if (result[1] === true) {
         beatmaps_md5_cache.push(result[0].dataValues);
@@ -204,7 +200,7 @@ const get_md5_id = async (hash, returning = true) => {
 }
 
 const remove_beatmap = async (hash) => {
-    await beatmaps_md5.destroy({ where: {hash}, logging: false});
+    await beatmaps_md5.destroy({ where: {hash} });
 }
 
 const import_beatmap_info_csv = async (filepath) => {
@@ -232,7 +228,6 @@ const import_beatmap_info_csv = async (filepath) => {
         }
         if (new_chunk.length > 0){
             await osu_beatmap_info.bulkCreate( new_chunk, {
-                logging: false, 
                 returning: false, 
                 ignoreDuplicates: true,
                 include: [beatmaps_md5],
@@ -269,7 +264,6 @@ const import_beatmap_ids_csv = async (filepath) => {
         }
         if (new_chunk.length > 0){
             await osu_beatmap_id.bulkCreate( new_chunk, {
-                logging: false, 
                 returning: false, 
                 ignoreDuplicates: true,
                 include: [beatmaps_md5],
@@ -321,7 +315,6 @@ const import_beatmap_pps_csv = async (csv_dir) => {
             }
             if (new_chunk.length > 0){
                 await osu_beatmap_pp.bulkCreate( new_chunk, {
-                    logging: false, 
                     returning: false, 
                     ignoreDuplicates: true,
                     include: [beatmaps_md5],
@@ -363,7 +356,6 @@ const get_beatmap_pp = async (condition = {} ) => {
             'beatmap_id.ranked': 'ranked',
         },
 
-        logging: false,
         raw: true, 
     });
 

@@ -42,11 +42,11 @@ module.exports = {
             }
         }
 
-        const custom_command_names = await command_aliases.findAll({ raw: true, logging: false });
+        const custom_command_names = await command_aliases.findAll({ raw: true });
         
         for (let {name, command_id} of custom_command_names){
             if (name === requested_command){
-                const commands = await custom_commands.findAll({ where: { id: command_id }, logging: false, raw: true });
+                const commands = await custom_commands.findAll({ where: { id: command_id }, raw: true });
                 for (let command of commands){
                     if (command.id === command_id && command.channelname === args.channelname){
                         return {success: command.text}

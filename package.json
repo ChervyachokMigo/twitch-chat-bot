@@ -20,6 +20,7 @@
     "express-subdomain": "^1.0.5",
     "fs": "^0.0.1-security",
     "glob": "^10.3.10",
+    "input": "^1.0.1",
     "keypress": "^0.2.1",
     "koffi": "^2.6.11",
     "md5-file": "^5.0.0",

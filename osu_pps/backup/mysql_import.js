@@ -3,10 +3,12 @@
 const path = require("path");
 
 const fs = require("fs");
+const input = require("input");
+
 
 const { MYSQL_SAVE } = require("../../DB/base.js");
 
-const { prepareDB } = require("../../DB/defines.js");
+const { prepareDB, mysql_actions } = require("../../DB/defines.js");
 const splitArray = require("../tools/splitArray.js");
 
 
@@ -37,11 +39,26 @@ module.exports = {
     import_table_csv
 }
 
-/*
-const main = async () => {
+
+
+const main = async (args) => {
     await prepareDB();
 
-    const data = fs.readFileSync('./.trash/beatmaps_pps_bad_without_id.csv', {encoding: 'utf8'}).split('\n')
+	console.log('importing table');
+
+		const csv_folder_path = path.join( 'data', 'mysql_backups');
+		const files = fs.readdirSync( csv_folder_path );
+		const tables = mysql_actions.map( x => x.names );
+
+		await import_table_csv( 
+			args?.filepath || path.join( csv_folder_path, await input.select('Select csv file', files )), 
+			args?.tablename || await input.select('Select table name', tables),
+		);
+		
+	console.log('import complete');
+
+
+    /*const data = fs.readFileSync('./.trash/beatmaps_pps_bad_without_id.csv', {encoding: 'utf8'}).split('\n')
     .map( x => x.replace(/["\r﻿]/gi,'').split(',') )
 
     const header = data.shift();
@@ -50,11 +67,9 @@ const main = async () => {
 
     const content_objects = content.map( x => Object.fromEntries( x.map( (y, i) => [header[i], y] ) ));
 
-    'osu_beatmap_pp'
+    'osu_beatmap_pp'*/
     
 
 }
 
 main();
-
-*/
