@@ -4,9 +4,8 @@ const fs = require("fs");
 const keypress = require('keypress');
 const { cpuUsage } = require('os-utils');
 
-const { prepareDB, select_mysql_model } = require("../DB/defines.js");
+const { prepareDB } = require("../DB/defines.js");
 const { ModsToInt } = require('./osu_mods');
-const { MYSQL_SAVE, MYSQL_GET_ALL } = require("../DB/base");
 
 const { osu_md5_storage, 
     mysql_chunk_size, 
@@ -22,6 +21,7 @@ const { powershell_call } = require("../powershell.js");
 const { save_calculated_data, calculated_data_length, calc_result_add } = require("./calc_data_saver.js");
 
 const recomend_command = require('../twitchchat/commands/recomend.js');
+const { select_mysql_model } = require("mysql-tools");
 
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 const calc_dll = path.join('P:\\PerformanceCalculator.dll');
@@ -59,14 +59,9 @@ const cpu_usage = async () => {
     });
 }
 
-
 const kill_process = (appName) => {
     execSync(`taskkill /im ${appName} /F`);
 }
-
-const beatmap_ids = select_mysql_model('beatmap_id');
-const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
-const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
 const ActionsController =  async () => {
 
@@ -190,6 +185,8 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
 }
 
 const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
+	const beatmap_ids = select_mysql_model('beatmap_id');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
     return await beatmap_ids.findAll( {
         where: {
@@ -329,6 +326,9 @@ const init_key_events = () => {
 }
 
 const get_beatmap_pps_by_mods_and_acc = async (condition) => {
+
+	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
     return await osu_beatmap_pp.findAll( {
         where: condition,

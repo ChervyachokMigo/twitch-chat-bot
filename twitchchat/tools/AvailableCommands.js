@@ -1,9 +1,6 @@
 const { readdirSync } = require('fs');
 const log  = require('../../tools/log');
-const { select_mysql_model } = require('../../DB/defines');
-
-const command_aliases = select_mysql_model('command_aliases');
-const custom_commands = select_mysql_model('custom_commands');
+const { select_mysql_model } = require('mysql-tools');
 
 this.commands = [];
 
@@ -42,6 +39,9 @@ module.exports = {
             }
         }
 
+		const command_aliases = select_mysql_model('command_aliases');
+		const custom_commands = select_mysql_model('custom_commands');
+		
         const custom_command_names = await command_aliases.findAll({ raw: true });
         
         for (let {name, command_id} of custom_command_names){

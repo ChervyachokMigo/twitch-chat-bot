@@ -25,7 +25,7 @@
     "koffi": "^2.6.11",
     "md5-file": "^5.0.0",
     "minimist": "^1.2.8",
-    "mysql2": "^3.6.5",
+    "mysql-tools": "github:ChervyachokMigo/MYSQL-tools",
     "node-irc": "^0.0.5",
     "node-windows": "^1.0.0-beta.8",
     "os": "^0.1.2",

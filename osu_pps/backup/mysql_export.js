@@ -1,12 +1,11 @@
 const path = require("path");
 
-const { MYSQL_GET_ALL } = require("../../DB/base.js");
-
 const { prepareDB } = require("../../DB/defines.js");
 const actions = require("../consts/actions.js");
 const { ModsToInt } = require("../osu_mods.js");
 const { writeFileSync, readdirSync } = require("fs");
 const { spawnSync } = require("child_process");
+const { MYSQL_GET_ALL } = require("mysql-tools");
 
 const backup_path = path.join(__dirname, '../../data/mysql_backups');
 
@@ -33,7 +32,7 @@ const export_osu_beatmap_pp_csv = async () => {
 
         console.log('exporting >', 'osu_beatmap_pp','acc:', acc, 'mods:', mods_int);
 
-        const mysql_values = await MYSQL_GET_ALL( 'osu_beatmap_pp', { mods: mods_int, accuracy: Number(acc) });
+        const mysql_values = await MYSQL_GET_ALL({ action:  'osu_beatmap_pp', params: { mods: mods_int, accuracy: Number(acc) }});
         
         save_csv(mysql_values, `osu_beatmap_pp_${acc}_${mods_int}.csv`);
         
@@ -51,7 +50,7 @@ const export_any_table_csv = async (tablename) => {
 
     console.log('exporting >', tablename);
 
-    const mysql_values = await MYSQL_GET_ALL( tablename );
+    const mysql_values = await MYSQL_GET_ALL({ action:  tablename });
     
     save_csv(mysql_values, `${tablename}.csv`);
 

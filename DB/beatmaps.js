@@ -4,7 +4,9 @@ const { Op } = require("@sequelize/core");
 
 const { load_csv } = require("../osu_pps/backup/mysql_import");
 const splitArray = require("../osu_pps/tools/splitArray");
-const { select_mysql_model, osu_beatmaps_mysql } = require("./defines");
+
+const { select_mysql_model, get_connection } = require("mysql-tools");
+const { DB_NAME_BEATMAPS } = require("../config");
 
 const GetGamemodeToInt = (mode) => {
     switch (mode) {
@@ -26,15 +28,12 @@ const GetGamemodeToInt = (mode) => {
 
 const Gamemodes = ['osu', 'taiko', 'fruits', 'mania'];
 
-const osu_beatmap_id = select_mysql_model('beatmap_id');
-const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
-const beatmaps_md5 = select_mysql_model('beatmaps_md5');
-const osu_beatmap_info = select_mysql_model('beatmap_info');
-
 let beatmaps_md5_cache = null;
 
 const init_md5_cache = async () => {
-    
+
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
     //await import_md5_csv ('data\\osu_pps\\mysql_backups\\beatmap_data.csv');
     beatmaps_md5_cache = await beatmaps_md5.findAll({ raw: true });
 
@@ -46,6 +45,9 @@ const init_md5_cache = async () => {
 }
 
 const get_beatmap_id = async ({ md5 }) => {
+	const osu_beatmap_id = select_mysql_model('beatmap_id');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
     return await osu_beatmap_id.findOne({
         
         include: [{ model: beatmaps_md5, 
@@ -63,6 +65,9 @@ const get_beatmap_id = async ({ md5 }) => {
 }
 
 const import_md5_csv = async (filepath) => {
+
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
     const csv_data = load_csv(filepath);
 
     for (let chunk of splitArray( csv_data, 500) ){
@@ -83,7 +88,12 @@ const get_beatmap_pps_by_id = async ({ beatmap_id, beatmapset_id, gamemode = 0, 
     beatmap_id > 0 && beatmapset_id > 0 ){
         return null;
     }
-    
+
+    const osu_beatmap_id = select_mysql_model('beatmap_id');
+	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+	const osu_beatmap_info = select_mysql_model('beatmap_info');
+
     return await osu_beatmap_pp.findAll({
         where: { mods },
 
@@ -116,14 +126,20 @@ const get_beatmap_pps_by_id = async ({ beatmap_id, beatmapset_id, gamemode = 0, 
 }
 
 const find_beatmap_pps = async ({ accuracy = 100, gamemode = 0, mods = 0, ranked = 4, pp_min = 0, pp_max = 0, aim = null, speed = null }) => {
+	const osu_beatmap_id = select_mysql_model('beatmap_id');
+	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+	const osu_beatmap_info = select_mysql_model('beatmap_info');
 
     let aim_condition = {};
     let speed_condition = {};
 
+	const osu_beatmaps_connection = get_connection(DB_NAME_BEATMAPS);
+
     if(aim){
         aim_condition = {
             pp_aim:{
-                 [Op.gte]: osu_beatmaps_mysql.literal(`pp_speed * ${aim}`)
+                 [Op.gte]: osu_beatmaps_connection.literal(`pp_speed * ${aim}`)
             }
         }
     }
@@ -131,7 +147,7 @@ const find_beatmap_pps = async ({ accuracy = 100, gamemode = 0, mods = 0, ranked
     if(speed){
         speed_condition = {
             pp_speed:{
-                [Op.gte]: osu_beatmaps_mysql.literal(`pp_aim * ${speed}`)
+                [Op.gte]: osu_beatmaps_connection.literal(`pp_aim * ${speed}`)
             }
         }
     }
@@ -186,6 +202,9 @@ const get_md5_id = async (hash, returning = true) => {
         return cache_result;
     }
 
+
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
     const result = await beatmaps_md5.findOrCreate({ 
         where: { hash }
     });
@@ -200,10 +219,13 @@ const get_md5_id = async (hash, returning = true) => {
 }
 
 const remove_beatmap = async (hash) => {
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
     await beatmaps_md5.destroy({ where: {hash} });
 }
 
 const import_beatmap_info_csv = async (filepath) => {
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+	const osu_beatmap_info = select_mysql_model('beatmap_info');
     const csv_data = load_csv(filepath);
 
     console.log('loaded', csv_data.length, 'records from', filepath);
@@ -239,6 +261,9 @@ const import_beatmap_info_csv = async (filepath) => {
 }
 
 const import_beatmap_ids_csv = async (filepath) => {
+	const osu_beatmap_id = select_mysql_model('beatmap_id');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
     const csv_data = load_csv(filepath);
 
     console.log('loaded', csv_data.length, 'records from', filepath);
@@ -275,6 +300,8 @@ const import_beatmap_ids_csv = async (filepath) => {
 }
 
 const import_beatmap_pps_csv = async (csv_dir) => {
+	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
     const files = readdirSync(csv_dir)
 
@@ -338,6 +365,11 @@ const get_beatmap_pp = async (condition = {} ) => {
 
     const beatmap_id_conditions = Object.entries( condition ).filter( x => beatmap_pp_id_keys.indexOf(x[0]) > - 1)
     .reduce((a, v) => ({ ...a, [v[0]]: v[1]}), {}) ;
+
+	const osu_beatmap_id = select_mysql_model('beatmap_id');
+	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
 
     return await osu_beatmap_pp.findAll({
         where: beatmap_pp_conditions,

@@ -1,9 +1,9 @@
 const BannedChannels = require("./twitchchat/tools/BannedChannels.js");
 
 const { GET_VALUES_FROM_OBJECT_BY_KEY, onlyUnique } = require("./tools/tools.js");
-const { MYSQL_GET_ALL, MYSQL_DELETE, MYSQL_SAVE, MYSQL_GET_ONE } = require("./DB/base.js");
 
 const { game_category } = require("./twitchchat/constants/general.js");
+const { MYSQL_GET_ALL, MYSQL_GET_ONE, MYSQL_DELETE, MYSQL_SAVE } = require("mysql-tools");
 
 async function MYSQL_GET_TRACKING_DATA_BY_ACTION( action, custom_query_params = {} ){
     var query_params = {};
@@ -16,7 +16,7 @@ async function MYSQL_GET_TRACKING_DATA_BY_ACTION( action, custom_query_params = 
         default:
             throw new Error('undefined action');
     }
-    return await MYSQL_GET_ALL(query_action, query_params);
+    return await MYSQL_GET_ALL({ action: query_action, params: query_params });
 }
 
 const MYSQL_GET_TRACKING_TWITCH_CHATS = async () => {
@@ -29,7 +29,7 @@ const MYSQL_GET_TRACKING_TWITCH_CHATS = async () => {
 }
 
 const MYSQL_GET_IGNORE_TWITCH_CHATS = async () => {
-    const mysql_data = await MYSQL_GET_ALL('twitchchat_ignores');
+    const mysql_data = await MYSQL_GET_ALL({ action: 'twitchchat_ignores' });
     let usernames = [];
     if (mysql_data.length > 0){
         usernames = GET_VALUES_FROM_OBJECT_BY_KEY(mysql_data, 'channelname');
@@ -38,7 +38,7 @@ const MYSQL_GET_IGNORE_TWITCH_CHATS = async () => {
 }
 
 const MYSQL_GET_BANNED_TWITCH_CHATS = async () => {
-    const mysql_data = await MYSQL_GET_ALL('twitch_banned');
+    const mysql_data = await MYSQL_GET_ALL({ action: 'twitch_banned' });
     let usernames = [];
     if (mysql_data.length > 0){
         usernames = GET_VALUES_FROM_OBJECT_BY_KEY(mysql_data, 'channelname');
@@ -48,13 +48,13 @@ const MYSQL_GET_BANNED_TWITCH_CHATS = async () => {
 
 module.exports = {
     twitchchat_disable: async function  (channelname) {
-        //await MYSQL_SAVE( 'twitchchat_ignores' , {channelname}, {channelname});
+        //await MYSQL_SAVE( 'twitchchat_ignores' , {channelname});
         await MYSQL_DELETE( 'twitchchat_enabled' , {channelname});
     },
 
     twitchchat_enable: async function  (channelname) {
         await MYSQL_DELETE( 'twitchchat_ignores' , {channelname});
-        await MYSQL_SAVE( 'twitchchat_enabled' , {channelname}, {channelname});
+        await MYSQL_SAVE( 'twitchchat_enabled' , {channelname});
     },
 
     get_twitch_channels_names: async() => {
@@ -84,7 +84,8 @@ module.exports = {
     },
 
     MYSQL_ADD_TWITCH_OSU_BIND: async ({twitch, osu}) => {
-        await MYSQL_SAVE('twitch_osu_binds', {twitch_id: twitch.id}, {
+        await MYSQL_SAVE('twitch_osu_binds', {
+			twitch_id: twitch.id, 
             twitch_name: twitch.name,
             osu_id: osu.id,
             osu_name: osu.name
@@ -94,7 +95,7 @@ module.exports = {
     MYSQL_GET_IGNORE_TWITCH_CHATS,
 
     MYSQL_GET_ENABLED_TWITCH_CHATS : async () => {
-        const mysql_data = await MYSQL_GET_ALL('twitchchat_enabled');
+        const mysql_data = await MYSQL_GET_ALL({ action: 'twitchchat_enabled' });
         let usernames = [];
         if (mysql_data.length > 0){
             usernames = GET_VALUES_FROM_OBJECT_BY_KEY(mysql_data, 'channelname');

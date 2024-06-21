@@ -1,4 +1,5 @@
-const { select_mysql_model } = require("../../DB/defines");
+
+const { select_mysql_model } = require("mysql-tools");
 const { PermissionToInt, parseArgs } = require("../../tools/tools");
 const { SELF } = require("../constants/enumPermissions");
 

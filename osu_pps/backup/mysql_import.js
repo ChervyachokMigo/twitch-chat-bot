@@ -5,11 +5,9 @@ const path = require("path");
 const fs = require("fs");
 const input = require("input");
 
-
-const { MYSQL_SAVE } = require("../../DB/base.js");
-
-const { prepareDB, mysql_actions } = require("../../DB/defines.js");
+const { prepareDB } = require("../../DB/defines.js");
 const splitArray = require("../tools/splitArray.js");
+const { get_models_names, MYSQL_SAVE } = require("mysql-tools");
 
 
 const load_csv = (filepath) => {
@@ -30,7 +28,7 @@ const import_table_csv = async (filepath, tablename, chunk_size = 500) => {
     const content_objects = load_csv(filepath);
 
     for (let chunk of splitArray( content_objects, chunk_size) ){
-        await MYSQL_SAVE(tablename, 0, chunk)
+        await MYSQL_SAVE(tablename, chunk)
     }
 }
 
@@ -48,7 +46,7 @@ const main = async (args) => {
 
 		const csv_folder_path = path.join( 'data', 'mysql_backups');
 		const files = fs.readdirSync( csv_folder_path );
-		const tables = mysql_actions.map( x => x.names );
+		const tables = get_models_names();
 
 		await import_table_csv( 
 			args?.filepath || path.join( csv_folder_path, await input.select('Select csv file', files )), 

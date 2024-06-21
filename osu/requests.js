@@ -1,7 +1,7 @@
 const { auth } = require ('osu-api-extended');
 
-const { MYSQL_GET_ONE, MYSQL_SAVE } = require("../DB/base");
 const log = require('../tools/log');
+const { MYSQL_GET_ONE, MYSQL_SAVE } = require('mysql-tools');
 
 let tokens = {
     osu: {}
@@ -40,7 +40,10 @@ async function initOsu(){
             getdate: Math.trunc(new Date().valueOf()/1000),
             expires: token.expires_in
         };
-        await MYSQL_SAVE('token', {platform: 'osu'}, tokens.osu);
+        await MYSQL_SAVE('token', {
+			platform: 'osu',
+			...tokens.osu
+		});
         return token && token.access_token && token.expires_in?true:false;
     }
 }

@@ -1,6 +1,7 @@
 const { readFileSync } = require("fs");
 const path = require('path');
-const { prepareDB, select_mysql_model } = require('../DB/defines.js');
+const { prepareDB } = require('../DB/defines.js');
+const { select_mysql_model } = require("mysql-tools");
 
 
 module.exports = async () => {

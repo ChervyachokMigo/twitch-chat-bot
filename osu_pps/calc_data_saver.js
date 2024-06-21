@@ -1,4 +1,5 @@
-const { MYSQL_SAVE } = require("../DB/base");
+
+const { MYSQL_SAVE } = require("mysql-tools");
 const { ModsToInt } = require("./osu_mods");
 
 let calculated_chunck_data = [];
@@ -11,7 +12,7 @@ const save_calculated_data = async () => {
     if (recorded_calculations.length > 0){
         
         //console.log( 'calc > save to mysql >', recorded_calculations.length ,'records');
-        await MYSQL_SAVE('osu_beatmap_pp', 0, recorded_calculations );
+        await MYSQL_SAVE('osu_beatmap_pp', recorded_calculations );
         
     }
 }
