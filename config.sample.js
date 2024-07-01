@@ -8,8 +8,9 @@ module.exports = {
     DB_PORT: `3306`, 
     DB_USER: ``, 
     DB_PASSWORD: ``, 
-    DB_NAME_BEATMAPS: 'osu_beatmaps',
-    DB_NAME_TWITCHCHAT: 'twitchchat',
+    DB_TWITCHCHAT: 'twitchchat',
+	DB_DISCORD: 'zxcbot',
+	DB_BEATMAPS: 'osu_beatmaps',
 
     TWITCHCHAT_ROUTER_PORT: 7896,
 

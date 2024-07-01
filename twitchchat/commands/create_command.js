@@ -19,11 +19,11 @@ module.exports = {
                 channelname
             };
 
-            let response = (await custom_commands.findOrCreate({ 
+            let response = await custom_commands.findOrCreate({ 
                 where: req,
                 defaults: { text, perm: PermissionToInt(perm) },
                 raw: false,
-            }))
+            });
 
             const command = response.shift().dataValues;
             const is_created = response.shift();

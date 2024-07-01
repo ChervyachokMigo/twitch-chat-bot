@@ -212,7 +212,6 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
 }
 
 const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) => {
-    await prepareDB();
     
     const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked))
     .sort ( (a, b) => a.md5.localeCompare(b.md5) );
