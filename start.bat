@@ -1,3 +1,3 @@
-title twitch_chat_bot
+:start
 npm run start
-pause
+goto start

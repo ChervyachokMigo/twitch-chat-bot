@@ -12,7 +12,7 @@ const log = require("./tools/log.js");
 
 const main = async () => {
     process.title = 'twitch_chat_bot';
-    
+    try {
     await prepareDB();
     await twitchchat_init();
     
@@ -25,6 +25,9 @@ const main = async () => {
     twitchchat_load_events();
     
     await beatmaps_db.init();
+	} catch (e) {
+		throw new Error(e)
+	}
 }
 
 main();

@@ -59,7 +59,7 @@ const twitchchat_init = async() => {
     this.twitchchat_client = new Client({
         options: { debug: true },
         identity: {
-            username: 'sed_god',
+            username: 'sadgod_vote_trump',
             password: `oauth:${twitch_chat_token}`
         },
         channels: TwitchChatNames

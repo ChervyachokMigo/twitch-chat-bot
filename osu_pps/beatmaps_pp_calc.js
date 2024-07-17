@@ -4,7 +4,6 @@ const fs = require("fs");
 const keypress = require('keypress');
 const { cpuUsage } = require('os-utils');
 
-const { prepareDB } = require("../DB/defines.js");
 const { ModsToInt } = require('./osu_mods');
 
 const { osu_md5_storage, 
@@ -347,7 +346,7 @@ const get_beatmap_pps_by_mods_and_acc = async (condition) => {
 
 const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
     console.time('loading');
-    console.log(`calc > loading > acc: ${acc}% > mods: ${mods.join('+')}`);
+    console.log(`calc > loading > acc: ${acc}% > mods: ${mods.length == 0 ? 'No Mods' :mods.join('+')}`);
 
     const mods_int = ModsToInt(mods);
 
