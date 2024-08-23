@@ -11,6 +11,7 @@ this.client = null;
 
 module.exports = {
     init_osu_irc: () => {
+		console.log('connection osu irc');
         this.client = new ircClient(server, port, username, username, password);
         this.client.verbosity = 0;
         this.client.connect();

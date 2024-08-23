@@ -28,7 +28,7 @@ const twitchchat_refresh_category = async () =>{
 
     const channels_to_join = TwitchChatNames.filter( val => old_channels.indexOf(val) === -1 );
     if (channels_to_join.length > 0){
-        //log(`joined to `+channels_to_join.join(', '), moduleName);
+        log(`joined to `+channels_to_join.join(', '), moduleName);
         for (let channelname of channels_to_join) {
             await this.twitchchat_client.join(channelname);
         }
@@ -36,7 +36,7 @@ const twitchchat_refresh_category = async () =>{
 
     const channels_to_part = old_channels.filter( val => TwitchChatNames.indexOf(val) === -1 );
     if (channels_to_part.length > 0){
-        //log(`leave from `+channels_to_part.join(', '), moduleName);
+        log(`leave from `+channels_to_part.join(', '), moduleName);
         for (let channelname of channels_to_part) {
             await this.twitchchat_client.part(channelname);
         }
@@ -46,23 +46,24 @@ const twitchchat_refresh_category = async () =>{
 const twitchchat_init = async() => {    
     log('Загрузка твич чатов', moduleName);
 
-    const {TwitchChatNames, TwitchChatIgnoreChannels} = await get_twitch_channels_names();
+    /*const {TwitchChatNames, TwitchChatIgnoreChannels} = await get_twitch_channels_names();
 
     if (TwitchChatNames.length === 0){
         log('no selected channels', moduleName)
         return;
-    }
+    }*/
 
-    initMessageForwarderTimer();
-    initCommandsForwarderTimer();    
+    //initMessageForwarderTimer();
+    //initCommandsForwarderTimer();    
 
     this.twitchchat_client = new Client({
-        options: { debug: true },
+        options: { debug: false },
         identity: {
             username: 'sadgod_vote_trump',
             password: `oauth:${twitch_chat_token}`
         },
-        channels: TwitchChatNames
+		//channels: TwitchChatNames
+        channels: ['sadgod_vote_trump']
     });
 
     this.twitchchat_client.on('join', async (channelname, username) => {
@@ -86,10 +87,11 @@ const twitchchat_init = async() => {
     });
 
     this.twitchchat_client.on('message', async (channel, tags, message, self) => {
-        await onMessage(this.twitchchat_client, channel, tags, message, self, TwitchChatIgnoreChannels)
+        //await onMessage(this.twitchchat_client, channel, tags, message, self, TwitchChatIgnoreChannels)
+		await onMessage(this.twitchchat_client, channel, tags, message, self, [])
     });
 
-    await this.twitchchat_client.connect();
+    return await this.twitchchat_client.connect();
 }
 
 module.exports = {

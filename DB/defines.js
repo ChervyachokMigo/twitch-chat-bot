@@ -33,7 +33,7 @@ module.exports = {
 			await prepareEND();
 
 		} catch (e) {
-			console.error(e);
+			console.error(__dirname, e);
 			throw new Error(e);
 		}
 

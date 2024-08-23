@@ -13,19 +13,20 @@ const log = require("./tools/log.js");
 const main = async () => {
     process.title = 'twitch_chat_bot';
     try {
-    await prepareDB();
-    await twitchchat_init();
-    
-    init_osu_irc();
-    
-    loadTwitchChatCommands();
-    setInfinityTimerLoop(twitchchat_refresh_category, 300);
+		await prepareDB();
+		console.log('twitchchat response', await twitchchat_init());
+		
+		init_osu_irc();
+		
+		loadTwitchChatCommands();
+		//setInfinityTimerLoop(twitchchat_refresh_category, 300);
 
-    log('запуск событий чата', 'initialisation');
-    twitchchat_load_events();
-    
-    await beatmaps_db.init();
+		
+		twitchchat_load_events();
+		
+		await beatmaps_db.init();
 	} catch (e) {
+		console.error(__dirname, e);
 		throw new Error(e)
 	}
 }

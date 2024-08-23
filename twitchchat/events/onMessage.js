@@ -20,8 +20,10 @@ module.exports = async (twitchchat_client, channel, tags, message, self, TwitchC
 
     const messageFormatedText = `**${username}**: ${message}`;
 
-    await axios.post ('http://localhost:1111/add_message', {channelname, username, text: message});
+    //await axios.post ('http://localhost:1111/add_message', {channelname, username, text: message});
     
+	console.log( {channelname, username, text: message} );
+
     sendIfLongLength(messageFormatedText);
 
     saveMessageInBuffer(channelname, messageFormatedText);
@@ -41,11 +43,11 @@ module.exports = async (twitchchat_client, channel, tags, message, self, TwitchC
         emit('runCommand', {channelname, text: messageFormatedText});
         log(`[${channelname}] ${tags.username} >  ${messageFormatedText} `, moduleName);
     } else if (command_response.error) {
-        console.error(command_response.error);
+        console.error('command_response.error', command_response.error);
     } else if (command_response.channelignore) {
         //console.log(`[ignoring] ${command_response.channelignore}`); //чатики
     } else if ( command_response.not_enabled) {
-        //console.log(`[disabled] ${command_response.not_enabled}`) //чатики
+       // console.log(`[disabled] ${command_response.not_enabled}`) //чатики
     } else if ( command_response.disallowed_command){
         console.log(command_response.disallowed_command)
     } else if ( command_response.not_exists_command) {
