@@ -18,5 +18,5 @@ module.exports = async () => {
     await dashboard.bind_screen_element({name: screen_name, element: 'last_message'});
 
     await dashboard.css_apply({selector: '.feed', prop: 'color', value: '#eee'});
-	await dashboard.css_apply({selector: '.feed', prop: 'color', value: '#eee'});
+	await dashboard.css_apply({selector: '.feed', prop: 'text-shadow', value: '1px 1px 2px black'});
 }
