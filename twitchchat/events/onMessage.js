@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const log  = require("../../tools/log.js");
+const dashboard = require('dashboard_framework')
 
 const { ModerationName } = require("../constants/general");
 const { addMessageAmount } = require("../tools/ChattersAmounts");
@@ -22,7 +23,13 @@ module.exports = async (twitchchat_client, channel, tags, message, self, TwitchC
 
     //await axios.post ('http://localhost:1111/add_message', {channelname, username, text: message});
     
-	console.log( {channelname, username, text: message} );
+	//console.log( {channelname, username, text: message} );
+
+	await dashboard.emit_event({
+        feedname: 'last_message',
+        type: 'ticker',
+        title: `${username}: ${message}`,
+    });
 
     sendIfLongLength(messageFormatedText);
 

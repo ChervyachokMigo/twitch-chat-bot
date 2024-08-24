@@ -16,6 +16,7 @@ const { initCommandsForwarderTimer, } = require('./tools/CommandForwarder.js');
 const BannedChannels = require('./tools/BannedChannels.js');
 
 const onMessage = require('./events/onMessage.js');
+const display_init = require('./display/init.js');
 
 const moduleName = `Stalker Twitch Chat`;
 
@@ -54,7 +55,9 @@ const twitchchat_init = async() => {
     }*/
 
     //initMessageForwarderTimer();
-    //initCommandsForwarderTimer();    
+    //initCommandsForwarderTimer();   
+
+	await display_init ();
 
     this.twitchchat_client = new Client({
         options: { debug: false },

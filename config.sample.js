@@ -16,7 +16,13 @@ module.exports = {
 
     twitch_chat_token: '',
 
-    osu_irc_args: ['irc.ppy.sh', 6667, '', '']
+    osu_irc_args: ['irc.ppy.sh', 6667, '', ''],
+
+	//https://yandex.cloud/ru/docs/iam/operations/iam-token/create#api_1
+	yandex_oauth_token: '',
+		
+	//https://console.yandex.cloud/folders/<идентификатор_каталога>
+	yandex_folders_id: ''
 }
 
 // to get token
