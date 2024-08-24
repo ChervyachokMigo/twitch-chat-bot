@@ -8,6 +8,7 @@ const { emit } = require("../tools/GuildEvents");
 const { sendIfLongLength, saveMessageInBuffer } = require("../tools/MessageForwarder");
 
 const manageMessage = require("../tools/manageMessage");
+const { calc_message } = require("../../DB/stats.js");
 
 const moduleName = 'Twitch Chat'
 
@@ -18,6 +19,12 @@ module.exports = async (twitchchat_client, channel, tags, message, self, TwitchC
     const escaped_message = message.trim();
     const channelname = channel.toString().replace(/#/g, "");
     const username = tags.username;
+	const userid = tags['user-id'];
+	const usercolor = tags.color;
+
+	await calc_message(
+		{ userid, username, usercolor }, 
+		{ text: escaped_message });
 
     const messageFormatedText = `**${username}**: ${message}`;
 
@@ -28,7 +35,7 @@ module.exports = async (twitchchat_client, channel, tags, message, self, TwitchC
 	await dashboard.emit_event({
         feedname: 'last_message',
         type: 'ticker',
-        title: `${username}: ${message}`,
+        title: `<p style="display: inline; color: ${usercolor}">${username}</p>: ${message}`,
     });
 
     sendIfLongLength(messageFormatedText);

@@ -17,6 +17,7 @@ const BannedChannels = require('./tools/BannedChannels.js');
 
 const onMessage = require('./events/onMessage.js');
 const display_init = require('./display/init.js');
+const { inc_joins } = require('../DB/stats.js');
 
 const moduleName = `Stalker Twitch Chat`;
 
@@ -73,6 +74,7 @@ const twitchchat_init = async() => {
         const new_channelname = channelname.replace('#', '');
         if (new_channelname === ModerationName){
             log(`[${new_channelname}] ${username} > подключен к чату`, moduleName);
+			await inc_joins( username );
             if (username !== ModerationName){
                 //await this.twitchchat_client.say(new_channelname, `@${username}, привет` );
             } else {
