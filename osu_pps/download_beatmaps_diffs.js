@@ -1,8 +1,8 @@
 
 const { default: axios } = require('axios');
-const crypto = require('crypto');
-const { writeFileSync } = require('fs');
-const path = require('path');
+const crypto = require('node:crypto');
+const { writeFileSync } = require('node:fs');
+const path = require('node:path');
 const { osu_md5_storage } = require('../settings');
 const { get_beatmap_id } = require('../DB/beatmaps');
 

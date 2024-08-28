@@ -1,4 +1,4 @@
-const { readdirSync } = require('fs');
+const { readdirSync } = require('node:fs');
 const log  = require('../../tools/log');
 const { select_mysql_model } = require('mysql-tools');
 

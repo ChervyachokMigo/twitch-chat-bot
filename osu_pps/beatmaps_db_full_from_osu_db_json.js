@@ -1,5 +1,5 @@
-const { readFileSync } = require("fs");
-const path = require('path');
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
 const { prepareDB } = require('../DB/defines.js');
 const { select_mysql_model } = require("mysql-tools");
 

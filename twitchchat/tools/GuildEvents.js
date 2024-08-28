@@ -1,4 +1,4 @@
-const { EventEmitter } = require('events');
+const { EventEmitter } = require('node:events');
 const { default: axios } = require('axios');
 const { TWITCHCHAT_ROUTER_PORT } = require('../../config');
 const log = require('../../tools/log');

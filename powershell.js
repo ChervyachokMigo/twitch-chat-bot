@@ -1,7 +1,7 @@
 
-const { spawn } = require('child_process');
-const util = require('util');
-const os = require('os');
+const { spawn } = require('node:child_process');
+const util = require('node:util');
+const os = require('node:os');
 const { calc_result_parse } = require('./osu_pps/calc_data_saver');
 
 const _psToUTF8 = '$OutputEncoding = [System.Console]::OutputEncoding = [System.Console]::InputEncoding = [System.Text.Encoding]::UTF8 ; ';

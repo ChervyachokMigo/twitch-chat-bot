@@ -13,28 +13,18 @@
   "dependencies": {
     "@sequelize/core": "^7.0.0-alpha.29",
     "axios": "^1.6.2",
-    "child_process": "^1.0.2",
-    "crypto": "^1.0.1",
     "dashboard_framework": "github:ChervyachokMigo/dashboard_framework",
-    "events": "^3.3.0",
     "express": "^4.18.2",
     "express-subdomain": "^1.0.5",
-    "fs": "^0.0.1-security",
     "glob": "^10.3.10",
-    "input": "^1.0.1",
     "keypress": "^0.2.1",
-    "koffi": "^2.6.11",
     "md5-file": "^5.0.0",
     "minimist": "^1.2.8",
     "mysql-tools": "github:ChervyachokMigo/MYSQL-tools",
     "node-irc": "^0.0.5",
-    "node-windows": "^1.0.0-beta.8",
-    "os": "^0.1.2",
     "os-utils": "^0.0.14",
     "osu-api-extended": "^2.7.67",
     "osu-tools": "github:ChervyachokMigo/osu-tools",
-    "path": "^0.12.7",
-    "tmi.js": "^1.8.5",
-    "util": "^0.12.5"
+    "tmi.js": "^1.8.5"
   }
 }

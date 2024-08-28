@@ -1,7 +1,7 @@
 const {osu_db_load, beatmap_property } = require('osu-tools');
 
-const path = require('path');
-const { writeFileSync } = require('fs');
+const path = require('node:path');
+const { writeFileSync } = require('node:fs');
 
 const {osuPath} = require('../settings.js');
 

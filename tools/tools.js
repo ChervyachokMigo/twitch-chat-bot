@@ -1,6 +1,6 @@
 const express = require('express');
 const express_subdomain = require('express-subdomain');
-const { existsSync, mkdirSync, readdirSync } = require(`fs`);
+const { existsSync, mkdirSync, readdirSync } = require('node:fs');
 
 const path = require('path');
 const { SELF, CHANNEL, ALL } = require('../twitchchat/constants/enumPermissions');
