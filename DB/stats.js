@@ -31,9 +31,9 @@ module.exports = {
 		const user_from_cache = get_user_stats(user);
 		const charscount = user_from_cache.charscount + text.length;
 		const messagescount = user_from_cache.messagescount + 1;
-		const values = {...user_from_cache, messagescount, charscount};
+		const values = {...user, messagescount, charscount};
 		update_cache_values(values);
-		await MYSQL_SAVE(mysql_action, {...user_from_cache, messagescount, charscount}, false);
+		await MYSQL_SAVE(mysql_action, values, false);
 	},
 
 	inc_joins: async (username) => {
