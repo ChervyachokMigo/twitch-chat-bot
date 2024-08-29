@@ -16,6 +16,10 @@ module.exports = {
 
     twitch_chat_token: '',
 
+	//https://dev.twitch.tv/console
+	TWITCH_CLIENT_ID: '',
+	TWITCH_CLIENT_SECRET: '',
+
     osu_irc_args: ['irc.ppy.sh', 6667, '', ''],
 
 	//https://yandex.cloud/ru/docs/iam/operations/iam-token/create#api_1
