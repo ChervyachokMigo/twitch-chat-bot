@@ -10,6 +10,8 @@ const { twitchchat_load_events } = require("./twitchchat/tools/GuildEvents.js");
 const { setInfinityTimerLoop } = require("./tools/tools.js");
 const log = require("./tools/log.js");
 const { init_user_stats } = require('./DB/stats.js');
+const change_title = require('./requests/change_title.js');
+const oauth = require('./twitchchat/tools/oauth_token.js');
 
 const main = async () => {
     process.title = 'twitch_chat_bot';
@@ -23,11 +25,14 @@ const main = async () => {
 		
 		loadTwitchChatCommands();
 		//setInfinityTimerLoop(twitchchat_refresh_category, 300);
-
 		
 		twitchchat_load_events();
 		
 		await beatmaps_db.init();
+
+		await oauth.init();
+		
+		console.log('bot started');
 	} catch (e) {
 		console.error(__dirname, e);
 		throw new Error(e)

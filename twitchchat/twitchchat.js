@@ -18,6 +18,8 @@ const BannedChannels = require('./tools/BannedChannels.js');
 const onMessage = require('./events/onMessage.js');
 const display_init = require('./display/init.js');
 const { inc_joins } = require('../DB/stats.js');
+const change_title = require('../requests/change_title.js');
+const get_user_id = require('../requests/get_user_id.js');
 
 const moduleName = `Stalker Twitch Chat`;
 
@@ -63,11 +65,11 @@ const twitchchat_init = async() => {
     this.twitchchat_client = new Client({
         options: { debug: false },
         identity: {
-            username: 'sadgod_vote_trump',
+            username: 'sad_god_',
             password: `oauth:${twitch_chat_token}`
         },
 		//channels: TwitchChatNames
-        channels: ['sadgod_vote_trump']
+        channels: ['sad_god_']
     });
 
     this.twitchchat_client.on('join', async (channelname, username) => {
@@ -80,6 +82,13 @@ const twitchchat_init = async() => {
             } else {
                //await this.twitchchat_client.say(new_channelname, `@${username}, привет единственный зритель` );
             }
+        }
+    });
+
+	this.twitchchat_client.on('part', async (channelname, username) => {
+        const new_channelname = channelname.replace('#', '');
+        if (new_channelname === ModerationName){
+            log(`[${new_channelname}] ${username} > отключен от чата`, moduleName);
         }
     });
 

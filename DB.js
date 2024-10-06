@@ -63,7 +63,7 @@ module.exports = {
             game_id: game_category.osu,
             language: 'ru'
         });*/
-        const TwitchChatLiveNames = ['sadgod_vote_trump']
+        const TwitchChatLiveNames = ['sad_god_']
 
         const TwitchBanned = await MYSQL_GET_BANNED_TWITCH_CHATS();
         const TwitchChatIgnoreChannels = await MYSQL_GET_IGNORE_TWITCH_CHATS();
