@@ -4,15 +4,15 @@ module.exports = {
     notify_message: `Привет, если нужен бот для того, чтобы карты из чата отправлялись в игру и писались её параметры, то напиши !enable в чате (это автоматическое сообщние, и повторяться не будет)`,
     game_category: {
         osu: {
-			id: '21465',
+			name: 'osu!',
 			aliases: ['osu!', 'osu', 'осу']
 		},
 		dota_2: {
-			id: '29595',
+			name: 'dota 2',
             aliases: ['dota 2', 'dota2', 'dota', 'дота', 'дота 2']
 		},
 		zenless: {
-			id: '456845141',
+			name: 'zenless zone zero',
             aliases: ['zenless', 'зенлесс', 'zzz', 'zenless-zone-zero', 'zenless zone zero', 'ззз', 'зенлес']
 		},
 		

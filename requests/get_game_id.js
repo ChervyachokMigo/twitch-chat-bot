@@ -30,8 +30,10 @@ module.exports = async ({ id, name, igdb_id }) => {
 	const res = await axios.get( `${baseURL}${url_path}`, {headers});
 
 	if (res && res.status === 200) {
-		if (res.data) {
-			return res.data;
+		if (res.data && res.data.data) {
+			return res.data.data;
+		} else {
+			return [];
 		}
 	} else {
 		console.error(`error status ${res.status}`);
