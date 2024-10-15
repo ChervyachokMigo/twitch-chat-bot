@@ -1,6 +1,7 @@
 module.exports = {
 
-    osu_md5_storage: 'C:\\osu_md5_storage',
+    osu_md5_storage: 'D:\\osu_md5_storage',
+	beatmaps_cache: 'beatmaps_cache',
 
     osuPath: `D:\\osu!`,
 

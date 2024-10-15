@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sequelize/core": "^7.0.0-alpha.29",
+    "@sequelize/core": "^7.0.0-alpha.37",
     "axios": "^1.6.2",
     "dashboard_framework": "github:ChervyachokMigo/dashboard_framework",
     "express": "^4.18.2",
@@ -20,10 +20,11 @@
     "keypress": "^0.2.1",
     "md5-file": "^5.0.0",
     "minimist": "^1.2.8",
-    "mysql-tools": "github:ChervyachokMigo/MYSQL-tools",
+    "mysql-tools": "github:ChervyachokMigo/mysql-tools",
     "node-irc": "^0.0.5",
     "os-utils": "^0.0.14",
     "osu-api-extended": "^2.7.67",
+    "osu-md5-storage-archive": "github:ChervyachokMigo/osu-md5-storage-archive",
     "osu-tools": "github:ChervyachokMigo/osu-tools",
     "tmi.js": "^1.8.5"
   }

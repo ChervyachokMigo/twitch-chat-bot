@@ -10,7 +10,8 @@ const { osu_md5_storage,
     mysql_chunk_size, 
     calc_MaxExecuting, 
     calc_StartExecuting,
-    is_key_events
+    is_key_events,
+	beatmaps_cache
 } = require("../settings");
 
 const { download_by_md5_list } = require("./download_beatmaps_diffs");
@@ -21,6 +22,8 @@ const { save_calculated_data, calculated_data_length, calc_result_add } = requir
 
 const recomend_command = require('../twitchchat/commands/recomend.js');
 const { select_mysql_model } = require("mysql-tools");
+const { CreateFolderSync_IsNotExists } = require("../tools/tools.js");
+const storage = require("osu-md5-storage-archive");
 
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 const calc_dll = path.join('P:\\PerformanceCalculator.dll');
@@ -212,6 +215,8 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
 
 const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) => {
     
+	CreateFolderSync_IsNotExists(beatmaps_cache);
+
     const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked))
     .sort ( (a, b) => a.md5.localeCompare(b.md5) );
 
@@ -232,10 +237,14 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
                 continue;
             }
             if (data){
-                fs.writeFileSync(path.join(osu_md5_storage, `${md5}.osu`), data, {encoding: 'utf8'});
+				const filepath = path.join(beatmaps_cache, `${md5}.osu`);
+                fs.writeFileSync(filepath, data, {encoding: 'utf8'});
+				storage.add_one(filepath, md5);
                 console.log(`saved ${md5}.osu > ${data.length} bytes`);
             }
         }
+		
+		storage.save_filelist();
         beatmaps_failed = [];
     }
 

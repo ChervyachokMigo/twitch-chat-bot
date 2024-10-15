@@ -2,6 +2,8 @@ const path = require("path");
 const md5File = require('md5-file');
 const fs = require("fs");
 const { globSync } = require( 'glob' );  
+const { osu_db_load, beatmap_property } = require("osu-tools");
+
 
 const {osu_md5_storage, osuPath} = require('../settings.js');
 
@@ -16,10 +18,17 @@ const make_beatmaps_db = () => {
 
     console.log('> make_beatmaps_db > reading "Songs"...');
 
+	const beatmaps = osu_db_load(path.join(osuPath, 'osu!.db'), [
+		beatmap_property.folder_name,
+		beatmap_property.osu_filename,
+		beatmap_property.gamemode,
+		beatmap_property.beatmap_md5
+	]);
+
     let beatmaps_db = fs.existsSync( beatmaps_md5_db )? 
         JSON.parse( fs.readFileSync( beatmaps_md5_db, {encoding: 'utf8'} )): [];
 
-    const beatmaps_list = beatmaps_db.filter( val => blocked_files.indexOf( val.md5 ) === -1 ).map( data => data['fpr'] );
+    //const beatmaps_list = beatmaps_db.filter( val => blocked_files.indexOf( val.md5 ) === -1 ).map( data => data['fpr'] );
 
     const files = globSync( path.join(osuPath, 'Songs') + '/**/*.osu', { 
             absolute: false, 
