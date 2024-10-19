@@ -244,9 +244,11 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
             }
         }
 		
-		storage.save_filelist();
         beatmaps_failed = [];
+		storage.save_filelist();
     }
+
+	
 
 }
 
@@ -363,7 +365,7 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
 
     const calculated_set = new Set( calculated_osu_beatmaps.map( (x) =>`${x.md5_int}:${x.accuracy}:${x.mods}` ));
 
-    console.log('loaded calculated records:', calculated_osu_beatmaps.length)
+    console.log('loaded calculated records:', calculated_osu_beatmaps.length);
 
     //const actions_with_mods = actions.map( val => { return {...val, mods_int } });
 
@@ -391,6 +393,28 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
 
     console.timeEnd('loading');
 
+	console.log('prepairing',next_actions.length, 'maps');
+
+	for (let action of next_actions) {
+		const beatmap_in_cache = path.join(beatmaps_cache, action.md5 + '.osu');
+		if ( fs.existsSync(beatmap_in_cache)) {
+            continue;
+        }
+
+		if( !fs.existsSync(beatmap_in_cache) ){
+			console.log(`Extracting ${action.md5}`);
+			try{
+				const file = await storage.read_one(action.md5);
+				fs.writeFileSync(beatmap_in_cache, file.data);
+				console.log(`Loaded ${action.md5} from storage`);
+			} catch (e) {
+				next_actions.splice(next_actions.findIndex( v => v.md5_int === action.md5_int ), 1);
+				console.log(`Removed ${action.md5} from actions because not found in storage`);
+				continue;
+			}
+		}
+	}
+	
     console.log('start calcing..');
 
     started_date = new Date();

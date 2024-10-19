@@ -17,10 +17,10 @@ module.exports = {
 
 		storage.prepare();
 
-		await storage.md5_compare();
+		await storage.update_storage();
 
         log('calculate pp', moduleName)
-       	//await calc_from_mysql();
+		await calc_from_mysql();
     }
 
 
