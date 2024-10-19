@@ -14,6 +14,7 @@ const { osu_md5_storage,
 	beatmaps_cache
 } = require("../settings");
 
+
 const { download_by_md5_list } = require("./download_beatmaps_diffs");
 const actions = require("./consts/actions");
 const { get_beatmap_id, GetGamemodeToInt, Gamemodes } = require("../DB/beatmaps");
@@ -42,9 +43,9 @@ const ranked_status = {
 let maxExecuting = calc_StartExecuting;
 
 let next_actions = [];
-this.current_actions = 0;
+let current_actions = 0;
 
-this.toggle_explorer = true;
+let toggle_explorer = true;
 
 let beatmaps_failed = [];
 
@@ -67,40 +68,42 @@ const kill_process = (appName) => {
 
 const ActionsController =  async () => {
 
-    if (this.current_actions >= maxExecuting){
+    if (current_actions >= maxExecuting){
         return;
     }
 
-    let completed = actions_max - next_actions.length;
+	if (!actions_max) {
+		console.log('no calc actions');
+		return;
+	}
 
-    if (next_actions.length === 0) {
-        if (!ended_count){
-            ended_count = this.current_actions;
-        }
-        if (ended_count){
-            ended_count = ended_count - 1;
-        }
-        await save_calculated_data();
+    if ( next_actions.length > mysql_chunk_size){
+		if (calculated_data_length() > mysql_chunk_size){
+			await save_calculated_data();
+			const completed = actions_max - next_actions.length;
+			console.log(`completed: ${(completed/actions_max * 100).toFixed(1)} %`);
+		}
+    } else {
+		if (next_actions.length === 0) {
+			if (ended_count === null){
+				ended_count = current_actions;
+			}
+			if (ended_count > 0){
+				ended_count = ended_count - 1;
+			} else {
+				await save_calculated_data();
+				const completed = actions_max - next_actions.length;
+				console.log(`completed: ${(completed/actions_max * 100).toFixed(1)} %`);
+				return;
+			}
+			
+		}
+	}
 
-        if( actions_max > 0 ){
-            console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
-        }
-
-        return;
-    }
-
-    if ( calculated_data_length() > mysql_chunk_size && next_actions.length > 0){
-        await save_calculated_data();
-        
-        if (actions_max > 0 ){
-            console.log(`completed: ${(completed/actions_max*100).toFixed(1)} %`);
-        }
-    }
-
-    while (this.current_actions < maxExecuting){
+    while (current_actions < maxExecuting){
         let args = next_actions.shift();
         if (args){
-            this.current_actions++;
+            current_actions++;
             calcAction (args);
         } else {
             break;
@@ -128,6 +131,7 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         acc_args,
         acc
     });*/
+	const filepath = path.join(path.dirname(__dirname), beatmaps_cache, `${md5}.osu`);
 
     const proc = spawn( 'dotnet', [
         calc_dll,
@@ -135,7 +139,7 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
         Gamemodes[gamemode],
         ...mods.length > 0? mods.map( x => `-m ${x}`): ['-m CL'],
         '-j',
-        `${path.join(osu_md5_storage, `${md5}.osu`)}`,
+        filepath,
         `-a ${acc}`,
     ], {windowsHide: true});
     
@@ -144,17 +148,22 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
     proc.stdout.on('data', (data) => {
         if (data.length > 0){
             result += data;
-        }
+        } else {
+			console.error('calc > error > calc process return zero data');
+		}
     })
 
     proc.stdout.on('close', async () =>{
         if (result.length > 0){
             try{
-                calc_result_add ({ md5_int, ...JSON.parse(result), mods });
+				const data = { md5_int, ...JSON.parse(result), mods };
+                calc_result_add (data);
             } catch (e){
                 console.error(`calc > error > something wrong with beatmap ${md5}.osu`);
             }
-        }
+        } else {
+			console.error('calc > error > calc process closed without result');
+		}
     });
 
    /* 
@@ -180,7 +189,7 @@ const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
     });*/
 
     proc.on('exit', async () => {
-        this.current_actions--;
+        current_actions--;
         await ActionsController();
     });
 
@@ -229,7 +238,7 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
 
         console.log(`calc complete > ${action_args.acc}% ${action_args.mods.join('+')}`);
 
-        let beatmaps_results = await download_by_md5_list(beatmaps_failed);
+        const beatmaps_results = await download_by_md5_list(beatmaps_failed);
 
         for (let {error, data, md5} of beatmaps_results){
             if (error){
@@ -245,7 +254,10 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
         }
 		
         beatmaps_failed = [];
-		storage.save_filelist();
+
+		if (beatmaps_results.length > 0) {
+			storage.save_filelist();
+		}
     }
 
 	
@@ -274,7 +286,7 @@ const init_key_events = () => {
             await recomend_command.action(request_bind_json);
         }
 
-        if (key && key.name == 'q' && next_actions.length > 0 && this.current_actions > 0) {
+        if (key && key.name == 'q' && next_actions.length > 0 && current_actions > 0) {
             let completed = actions_max - next_actions.length;
             let last_action_date = new Date();
             let processed_ms = last_action_date - started_date;
@@ -315,10 +327,10 @@ const init_key_events = () => {
             console.log('Сейчас выполняется:\t', maxExecuting);
         }
         if (key && key.name == 'e' ) {
-            this.toggle_explorer = !this.toggle_explorer;
+            toggle_explorer = !toggle_explorer;
             console.log('<----------------------------------------------------------------->');
-            console.log('Explorer изменен на', this.toggle_explorer);
-            if (this.toggle_explorer) {
+            console.log('Explorer изменен на', toggle_explorer);
+            if (toggle_explorer) {
                 exec(`explorer.exe`);
             } else {
                 kill_process('explorer.exe');
@@ -387,6 +399,8 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
         
     }
 
+	//next_actions = next_actions.slice(0, 600);
+
     console.log('added actions:', next_actions.length);
 
     actions_max = next_actions.length;
@@ -402,11 +416,10 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
         }
 
 		if( !fs.existsSync(beatmap_in_cache) ){
-			console.log(`Extracting ${action.md5}`);
 			try{
 				const file = await storage.read_one(action.md5);
 				fs.writeFileSync(beatmap_in_cache, file.data);
-				console.log(`Loaded ${action.md5} from storage`);
+				console.log(`Extracted ${action.md5} from storage`);
 			} catch (e) {
 				next_actions.splice(next_actions.findIndex( v => v.md5_int === action.md5_int ), 1);
 				console.log(`Removed ${action.md5} from actions because not found in storage`);
@@ -421,7 +434,7 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
 
     ended_count = null;
 
-    if (this.current_actions < maxExecuting){
+    if (current_actions < maxExecuting){
         await ActionsController();
     }
 
