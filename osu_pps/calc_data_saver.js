@@ -34,13 +34,11 @@ module.exports = {
 		calculated_chunk_data.push(data);
 	},
     save_calculated_data: async () => {
-		console.log('calculated_chunk_data.length', calculated_chunk_data.length);
 		const recorded_calculations = calculated_chunk_data.slice();
-		console.log('recorded_calculations', recorded_calculations.length);
 		calculated_chunk_data = [];
 
 		if (recorded_calculations.length > 0){
-			console.log('saving', recorded_calculations.length, 'records');
+			//console.log('saving', recorded_calculations.length, 'records');
 			await MYSQL_SAVE('osu_beatmap_pp', recorded_calculations );
 		}
 	},

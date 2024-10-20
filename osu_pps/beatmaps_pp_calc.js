@@ -111,7 +111,9 @@ const ActionsController =  async () => {
     }
 }
 
-const calcAction = ({md5, md5_int, gamemode = 0, acc = 100, mods = []}) => {
+const calcAction = (input) => {
+
+	const {md5, md5_int, gamemode = 0, acc = 100, mods = []} = input;
 
     /*let acc_args = `-a ${acc}`;
 
