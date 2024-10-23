@@ -250,7 +250,7 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
             if (data){
 				const filepath = path.join(beatmaps_cache, `${md5}.osu`);
                 fs.writeFileSync(filepath, data, {encoding: 'utf8'});
-				storage.add_one(filepath, md5);
+				await storage.add_one({ filepath, md5 });
                 console.log(`saved ${md5}.osu > ${data.length} bytes`);
             }
         }
@@ -261,8 +261,6 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
 			storage.save_filelist();
 		}
     }
-
-	
 
 }
 

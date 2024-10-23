@@ -8,7 +8,13 @@ const moduleName = 'Beatmaps db';
 
 module.exports = {
     init: async () => {
+		if (!process.env.api_key){
+			console.log('Error: No API key provided.');
+            process.exit();
+		}
 		
+		storage.set_api_key(process.env.api_key);
+
 		storage.set_path({ 
 			source: osu_md5_storage,
 			destination: osu_md5_storage,
@@ -17,7 +23,8 @@ module.exports = {
 
 		storage.prepare();
 
-		await storage.update_storage();
+		const new_files = await storage.update_storage();
+		await storage.check_files_by_list(new_files);
 
 		if(is_calc){
 			log('calculate pp', moduleName)

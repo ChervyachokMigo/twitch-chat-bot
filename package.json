@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js --inspect",
+    "start": "node --env-file=app.env index.js --inspect",
     "manager": "node osu_pps/osu_pps_manager.js"
   },
   "keywords": [],
