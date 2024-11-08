@@ -1,7 +1,7 @@
 const { setInfinityTimerLoop } = require("../../tools/tools.js");
 const { emit } = require("./GuildEvents");
 
-const { stalkerChatRefreshRate } = require("../../settings");
+const { ChatRefreshRate } = require("../../settings");
 const { ModerationName } = require("../constants/general");
 const max_discord_message_length = 2000;
 
@@ -40,7 +40,7 @@ const getLength = () => {
 module.exports = {
     initMessageForwarderTimer: () => {
         clearInterval(this.send_message_timer);
-        this.send_message_timer = setInfinityTimerLoop(sendMessages, stalkerChatRefreshRate);
+        this.send_message_timer = setInfinityTimerLoop(sendMessages, ChatRefreshRate);
     },
 
     sendMessages,

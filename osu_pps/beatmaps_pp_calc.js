@@ -42,6 +42,7 @@ const ranked_status = {
 
 let maxExecuting = calc_StartExecuting;
 
+let ignored_beatmaps = new Set();
 let next_actions = [];
 let current_actions = 0;
 
@@ -109,6 +110,7 @@ const ActionsController =  async () => {
             break;
         }
     }
+	
 }
 
 const calcAction = (input) => {
@@ -238,6 +240,8 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
     for (let action_args of actions()){
         await init_calc_action(beatmaps_data, action_args);
 
+		await save_calculated_data();
+		
         console.log(`calc complete > ${action_args.acc}% ${action_args.mods.join('+')}`);
 
         const beatmaps_results = await download_by_md5_list(beatmaps_failed);
@@ -394,7 +398,9 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
         let args = {...beatmap, acc, mods_int, mods };
 
         if (calculated_set.has( `${args.md5_int}:${args.acc}:${args.mods_int}`) === false) {
-            next_actions.push( args );
+			if (ignored_beatmaps.has(args.md5_int) === false) {
+				next_actions.push( args );
+			}
         }
         
     }
@@ -422,6 +428,9 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
 				console.log(`Extracted ${action.md5} from storage`);
 			} catch (e) {
 				next_actions.splice(next_actions.findIndex( v => v.md5_int === action.md5_int ), 1);
+				if (ignored_beatmaps.has(action.md5_int) === false) {
+					ignored_beatmaps.add(action.md5_int);
+				}
 				console.log(`Removed ${action.md5} from actions because not found in storage`);
 				continue;
 			}

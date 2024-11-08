@@ -7,7 +7,13 @@ const log = require("./tools/log");
 const moduleName = 'Beatmaps db';
 
 module.exports = {
-    init: async () => {
+    init: async (is_start_calculation) => {
+
+		if (typeof is_start_calculation === 'undefined') {
+			//load from settings
+			is_start_calculation = is_calc;
+		}
+
 		if (!process.env.api_key){
 			console.log('Error: No API key provided.');
             process.exit();
@@ -26,7 +32,7 @@ module.exports = {
 		const new_files = await storage.update_storage();
 		await storage.check_files_by_list(new_files);
 
-		if(is_calc){
+		if(is_start_calculation){
 			log('calculate pp', moduleName)
 			await calc_from_mysql();
 		} else {

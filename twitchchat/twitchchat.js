@@ -21,7 +21,7 @@ const { inc_joins } = require('../DB/stats.js');
 const change_title = require('../requests/change_title.js');
 const get_user_id = require('../requests/get_user_id.js');
 
-const moduleName = `Stalker Twitch Chat`;
+const moduleName = `Twitch Chat`;
 
 this.twitchchat_client = null;
 

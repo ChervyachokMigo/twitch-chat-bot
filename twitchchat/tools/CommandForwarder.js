@@ -1,4 +1,4 @@
-const { stalkerChatRefreshRate } = require("../../settings");
+const { ChatRefreshRate } = require("../../settings");
 const { setInfinityTimerLoop } = require("../../tools/tools.js");
 
 const { emit } = require("./GuildEvents");
@@ -19,7 +19,7 @@ const sendLastCommands = async () => {
 module.exports = {
     initCommandsForwarderTimer: () => {
         clearInterval(this.timer);
-        this.timer = setInfinityTimerLoop(sendLastCommands, stalkerChatRefreshRate);
+        this.timer = setInfinityTimerLoop(sendLastCommands, ChatRefreshRate);
     },
 
     sendLastCommands,
