@@ -1,5 +1,5 @@
 module.exports = {
-    acc: [98, 99, 100],
+    acc: [99],
     mods: [
         ['', 'HD'],         //reading
         ['', 'DT', 'HT'],   //timing

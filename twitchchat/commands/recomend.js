@@ -17,6 +17,7 @@ module.exports = {
     action: async ({channelname, tags, comargs})=>{
 
         const args = parseArgs(comargs, '-');
+		console.log('args', args);
 
         let n = 1;
         if (args.n){

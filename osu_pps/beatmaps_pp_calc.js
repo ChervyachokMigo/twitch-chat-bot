@@ -25,6 +25,7 @@ const recomend_command = require('../twitchchat/commands/recomend.js');
 const { select_mysql_model } = require("mysql-tools");
 const { CreateFolderSync_IsNotExists } = require("../tools/tools.js");
 const storage = require("osu-md5-storage-archive");
+const { Gamemode } = require("osu-tools");
 
 const calc_exe = path.join(__dirname,'../bin/pp_calculator/PerformanceCalculator.exe');
 const calc_dll = path.join('P:\\PerformanceCalculator.dll');
@@ -45,6 +46,7 @@ let maxExecuting = calc_StartExecuting;
 let ignored_beatmaps = new Set();
 let next_actions = [];
 let current_actions = 0;
+let cureent_action_args = null;
 
 let toggle_explorer = true;
 
@@ -114,7 +116,7 @@ const ActionsController =  async () => {
 }
 
 const calcAction = (input) => {
-
+	cureent_action_args = input;
 	const {md5, md5_int, gamemode = 0, acc = 100, mods = []} = input;
 
     /*let acc_args = `-a ${acc}`;
@@ -205,7 +207,7 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
 
     return await beatmap_ids.findAll( {
         where: {
-            gamemode: GetGamemodeToInt(gamemode), ranked: status
+            gamemode, ranked: status
         },
         raw: true,
 
@@ -228,9 +230,11 @@ const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
 
 const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) => {
     
+	const gamemode_int = GetGamemodeToInt(gamemode);
+
 	CreateFolderSync_IsNotExists(beatmaps_cache);
 
-    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode, ranked))
+    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode_int, ranked))
     .sort ( (a, b) => a.md5.localeCompare(b.md5) );
 
     if (is_key_events){
@@ -238,7 +242,7 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
     }
 
     for (let action_args of actions()){
-        await init_calc_action(beatmaps_data, action_args);
+        await init_calc_action(gamemode_int, beatmaps_data, action_args);
 
 		await save_calculated_data();
 		
@@ -268,44 +272,61 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
 
 }
 
-const init_key_events = () => {
-
-    keypress(process.stdin);
-
-    console.log('<----------------------------------------------------------------->');
+const print_help = () => {
+	console.log('<----------------------------------------------------------------->');
     console.log('*** CONTROL KEYS ***');
     console.log('Q\tPROCESS INFO');
     console.log('A\tDECREASE PROCESSES');
     console.log('S\tINCREASE PROCESSES');
+	console.log('R\tWRITE SENDED REQUESTS');
     console.log('P\tPAUSE/RESUME');
     console.log('CTRL + C\tEXIT');
     console.log('<----------------------------------------------------------------->');
+}
+
+const init_key_events = () => {
+
+    keypress(process.stdin);
+
+   print_help();
 
 
     process.stdin.on('keypress', async (ch, key) => {
-        if (key && key.name == 'r') {
+		if (!key) {
+			return;
+		}
+
+        if (key.name == 'r' || key.name == 'к') {
             console.log('sended requests');
             let request_bind_json = JSON.parse(fs.readFileSync(bind_recommend_maps, {encoding: 'utf8'}));
             request_bind_json.comargs = request_bind_json.comargs.trim().split(' ');
             await recomend_command.action(request_bind_json);
         }
 
-        if (key && key.name == 'q' && next_actions.length > 0 && current_actions > 0) {
-            let completed = actions_max - next_actions.length;
-            let last_action_date = new Date();
-            let processed_ms = last_action_date - started_date;
-            let processed_sec = (processed_ms * 0.001);
-            let action_speed = completed / processed_sec;
-            console.log('<----------------------------------------------------------------->');
-            console.log('Использование ЦП:\t', (await cpu_usage()).toFixed(0),'%');
-            console.log('Выполняется процессов:\t', maxExecuting);
-            console.log('Выполнено:\t\t', completed, '/', actions_max);
-            console.log('Осталось:\t\t', next_actions.length, '/', actions_max);
-            console.log('Скорость:\t\t', Number(action_speed.toFixed(1)), 'act/sec');
-            console.log('Работет:\t\t', Math.round(processed_sec/60), 'мин');
-            console.log('Заверешние через:\t', Math.round(next_actions.length/action_speed/60), 'мин');
-        }
-        if (key && key.name == 'p' ) {
+        if (key.name == 'q' || key.name == 'й') {
+			if (next_actions.length > 0 && current_actions > 0) {
+				let completed = actions_max - next_actions.length;
+				let last_action_date = new Date();
+				let processed_ms = last_action_date - started_date;
+				let processed_sec = (processed_ms * 0.001);
+				let action_speed = completed / processed_sec;
+				let mods = cureent_action_args.mods.join('+');
+				if (!mods) {
+					mods = 'No Mods';
+				}
+				print_help();
+				console.log(`Расчет режима:\t\t${Gamemodes[cureent_action_args.gamemode]}, ${cureent_action_args.acc}%, ${mods}`);
+				console.log('Использование ЦП:\t', (await cpu_usage()).toFixed(0),'%');
+				console.log('Выполняется процессов:\t', maxExecuting);
+				console.log('Выполнено:\t\t', completed, '/', actions_max);
+				console.log('Осталось:\t\t', next_actions.length, '/', actions_max);
+				console.log('Скорость:\t\t', Number(action_speed.toFixed(1)), 'act/sec');
+				console.log('Работет:\t\t', Math.round(processed_sec/60), 'мин');
+				console.log('Заверешние через:\t', Math.round(next_actions.length/action_speed/60), 'мин');
+			}
+		}
+
+        if (key.name == 'p' || key.name == 'з') {
             console.log('<----------------------------------------------------------------->');
             if (maxExecuting > 0){
                 maxExecuting = 0;
@@ -318,19 +339,25 @@ const init_key_events = () => {
             console.log('Количество процессов уменьшено до', maxExecuting);
         }
 
-        if (key && key.name == 'a' && maxExecuting > 1 ) {
-            maxExecuting = maxExecuting - 1;
-            console.log('<----------------------------------------------------------------->');
-            console.log('Количество процессов уменьшено на', 1);
-            console.log('Сейчас выполняется:\t', maxExecuting);
-        }
-        if (key && key.name == 's' && maxExecuting < calc_MaxExecuting ) {
-            maxExecuting = maxExecuting + 1;
-            console.log('<----------------------------------------------------------------->');
-            console.log('Количество процессов увеличено на', 1);
-            console.log('Сейчас выполняется:\t', maxExecuting);
-        }
-        if (key && key.name == 'e' ) {
+        if (key.name == 'a' || key.name == 'ф'){
+			if (maxExecuting > 1 ) {
+				maxExecuting = maxExecuting - 1;
+				console.log('<----------------------------------------------------------------->');
+				console.log('Количество процессов уменьшено на', 1);
+				console.log('Сейчас выполняется:\t', maxExecuting);
+			}
+		}
+
+        if (key.name == 's' || key.name == 'ы') {
+			if (maxExecuting < calc_MaxExecuting ) {
+				maxExecuting = maxExecuting + 1;
+				console.log('<----------------------------------------------------------------->');
+				console.log('Количество процессов увеличено на', 1);
+				console.log('Сейчас выполняется:\t', maxExecuting);
+			}
+		}
+
+        if (key.name == 'e' || key.name == 'у') {
             toggle_explorer = !toggle_explorer;
             console.log('<----------------------------------------------------------------->');
             console.log('Explorer изменен на', toggle_explorer);
@@ -341,7 +368,7 @@ const init_key_events = () => {
             }
         }
         
-        if (key && key.ctrl && key.name == 'c') {
+        if (key.ctrl && (key.name == 'c' || key.name == 'с')) {
             process.exit(0)
         }
     });
@@ -350,34 +377,57 @@ const init_key_events = () => {
     process.stdin.resume();
 }
 
-const get_beatmap_pps_by_mods_and_acc = async (condition) => {
+const get_beatmap_pps_by_mods_and_acc = async (gamemode, condition) => {
 
 	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const taiko_beatmap_pp = select_mysql_model('taiko_beatmap_pp');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
-    return await osu_beatmap_pp.findAll( {
-        where: condition,
-        raw: true,
+	if (gamemode == Gamemode.osu) {
 
-        include: [beatmaps_md5],
+		return await osu_beatmap_pp.findAll( {
+			where: condition,
+			raw: true,
 
-        fieldMap: {
-            'beatmaps_md5.hash': 'md5',
-        
-            'beatmaps_md5.id': 'md5_int',
-            'osu_beatmap_pp.md5': 'md5_int',
-        }
+			include: [beatmaps_md5],
 
-    });
+			fieldMap: {
+				'beatmaps_md5.hash': 'md5',
+			
+				'beatmaps_md5.id': 'md5_int',
+				'osu_beatmap_pp.md5': 'md5_int',
+			}
+
+		});
+
+	} else if (gamemode == Gamemode.taiko) {
+		return await taiko_beatmap_pp.findAll( {
+			where: condition,
+			raw: true,
+
+			include: [beatmaps_md5],
+
+			fieldMap: {
+				'beatmaps_md5.hash': 'md5',
+			
+				'beatmaps_md5.id': 'md5_int',
+				'taiko_beatmap_pp.md5': 'md5_int',
+			}
+
+		});
+	} else {
+		console.error('Invalid gamemode');
+        return [];
+	}
 }
 
-const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
+const init_calc_action = async ( gamemode, beatmaps = [], { acc = 100, mods } ) => {
     console.time('loading');
     console.log(`calc > loading > acc: ${acc}% > mods: ${mods.length == 0 ? 'No Mods' :mods.join('+')}`);
 
     const mods_int = ModsToInt(mods);
 
-    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc({ mods: mods_int, accuracy: acc });
+    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc(gamemode, { mods: mods_int, accuracy: acc });
 
     const calculated_set = new Set( calculated_osu_beatmaps.map( (x) =>`${x.md5_int}:${x.accuracy}:${x.mods}` ));
 
@@ -390,10 +440,14 @@ const init_calc_action = async ( beatmaps = [], { acc = 100, mods } ) => {
     for (let beatmap of beatmaps){
         // md5, beatmap_id, beatmapset_id, gamemode, ranked, md5_int
         
-        if (beatmap.ranked !== 4 || beatmap.gamemode !== 0){
+        if (beatmap.ranked !== 4){
             //console.log('skip >', beatmap.md5)
             continue;
         }
+
+		if (beatmap.gamemode !== Gamemode.osu && beatmap.gamemode !== Gamemode.taiko) {
+			continue;
+		}
 
         let args = {...beatmap, acc, mods_int, mods };
 

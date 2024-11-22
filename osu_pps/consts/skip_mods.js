@@ -1,6 +1,6 @@
 module.exports = [
     //'',
-	//'DT',
+	'DT',
     'HD', 'HT', 'HR', 'EZ',
 	//'HDDT',
     'DTHR', 'DTEZ', 'HTHR', 'HTEZ', 'HDHR', 'HDEZ', 'HDHT',

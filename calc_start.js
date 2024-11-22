@@ -10,7 +10,7 @@ const { init_osu_irc } = require("./twitchchat/tools/ircManager.js");
 const oauth = require('./twitchchat/tools/oauth_token.js');
 
 const main = async () => {
-    process.title = 'twitch_chat_bot';
+    process.title = 'calculation_pp';
     try {
 		await prepareDB();
 		
