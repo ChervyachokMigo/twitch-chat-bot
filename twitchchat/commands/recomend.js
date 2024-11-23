@@ -7,6 +7,8 @@ const { GET_TWITCH_OSU_BIND } = require("../../DB");
 const { irc_say } = require("../tools/ircManager");
 const { parseArgs } = require('../../tools/tools');
 const { ModsToInt, IntToMods } = require('../../osu_pps/osu_mods');
+const { Gamemode } = require('osu-tools');
+const { Gamemodes } = require('../../DB/beatmaps');
 
 module.exports = {
     command_name: `recomend`,
@@ -18,6 +20,14 @@ module.exports = {
 
         const args = parseArgs(comargs, '-');
 		console.log('args', args);
+
+		let gamemode = Gamemode.osu;
+		if (args.gamemode) {
+			gamemode = parseInt(args.gamemode);
+			if (gamemode !== Gamemode.osu && gamemode !== Gamemode.taiko) {
+				gamemode = Gamemode.osu;
+			}
+		}
 
         let n = 1;
         if (args.n){
@@ -32,11 +42,11 @@ module.exports = {
             }
         }
 
-        const acc_default = 100;
+        const acc_default = 99;
         let acc = acc_default;
         if (args.acc){
             acc = parseInt(args.acc);
-            const acc_available = [98,99,100];
+            const acc_available = [99];
             if (acc_available.indexOf(acc) == - 1) {
                 acc = acc_default;
             }
@@ -110,7 +120,7 @@ module.exports = {
         }
 
         for (let i= 0; i < n ; i++){
-            const beatmap = await find({username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int});
+            const beatmap = await find({ gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int });
 
             if (!beatmap){
                 return {error: '[recomend] > error no founded beatmap'}
@@ -146,32 +156,58 @@ module.exports = {
     }
 }
 
-const formatBeatmapInfoOsu = (username, { beatmap_id, beatmapset_id, artist, title, pp_total, pp_aim, pp_speed, pp_accuracy, accuracy, mods }) => {
-    const url = `[https://osu.ppy.sh/beatmapsets/${beatmapset_id}#osu/${beatmap_id} ${artist} - ${title}]`;
-    const acc = `${accuracy}%`;
-    const pp = `${pp_total}pp | aim: ${pp_aim}pp | speed: ${pp_speed}pp | accuracy: ${pp_accuracy}pp`;
-    const mods_str = IntToMods(mods).join('+');
+const formatBeatmapInfoOsu = (username, beatmap) => {
+	const res = [];
 
-    return [username, url, mods_str, acc, pp].join(' > ');
+	res.push(username);
+    res.push(`[https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id} ${beatmap.artist} - ${beatmap.title}]`);
+
+	res.push(IntToMods(beatmap.mods).join('+'));
+
+	res.push(`${beatmap.accuracy}%`);
+
+	let pp = [];
+
+	pp.push(`total: ${beatmap.pp_total}pp`);
+	/*if (beatmap.pp_aim) pp.push(`aim: ${beatmap.pp_aim}pp`);
+	if (beatmap.pp_speed) pp.push(`speed: ${beatmap.pp_speed}pp`);
+	if (beatmap.pp_accuracy) pp.push(`accuracy: ${beatmap.pp_accuracy}pp`);
+	if (beatmap.pp_difficulty) pp.push(`diff: ${beatmap.pp_difficulty}pp`);
+	if (beatmap.pp_ur) pp.push(`ur: ${beatmap.pp_ur}pp`);*/
+
+	pp = pp.join(' | ');
+
+	res.push(pp);
+
+	if (beatmap.stars) res.push(`${beatmap.stars.toFixed(1)} ★`);
+
+    return res.join(' > ');
 }
 
-const formatMap = ({ beatmap_id, beatmapset_id, artist, title, 
-    pp_total, pp_aim, pp_speed, pp_accuracy, accuracy, stars, diff_aim, diff_speed, speed_notes, AR, OD, mods }) => {
+const formatMap = (beatmap) => {
+	const res = [];
 
-    return [
-        `${artist} - ${title}`,
-        IntToMods(mods).join('+'),
-        `AR: ${AR.toFixed(1)}`,
-        `OD: ${OD.toFixed(1)}`,
-        `${accuracy}%=${pp_total}pp`, 
-        `aim=${pp_aim}pp`,
-        `speed=${pp_speed}pp`,
-        `accuracy=${pp_accuracy}pp`,
-        `diff=${stars.toFixed(1)} ★`,
-        `aim=${diff_aim.toFixed(1)} ★`,
-        `speed=${diff_speed.toFixed(1)} ★`,
-        `speednotes=${speed_notes}`,
-        `https://osu.ppy.sh/beatmapsets/${beatmapset_id}#osu/${beatmap_id}`,
-    ].join(' | ');
+	res.push( `${beatmap.artist} - ${beatmap.title}`);
+	res.push(IntToMods(beatmap.mods).join('+'));
+	res.push(`${beatmap.accuracy}%=${beatmap.pp_total}pp`);
+	if (beatmap.AR) 	res.push( `AR: ${beatmap.AR.toFixed(1)}`);
+	if (beatmap.OD) 	res.push( `OD: ${beatmap.OD.toFixed(1)}`);
+	if (beatmap.pp_aim) res.push(`aim=${beatmap.pp_aim}pp`,);
+	if (beatmap.pp_speed) res.push(`speed=${beatmap.pp_speed}pp`);
+	if (beatmap.pp_accuracy) res.push(`accuracy=${beatmap.pp_accuracy}pp`);
+	if (beatmap.pp_difficulty) res.push(`diff=${beatmap.pp_difficulty}pp`);
+	if (beatmap.pp_ur) res.push(`ur=${beatmap.pp_ur}`);
+	if (beatmap.stars) res.push(`diff=${beatmap.stars.toFixed(1)} ★`);
+	if (beatmap.diff_aim) res.push(`aim=${beatmap.diff_aim.toFixed(1)} ★`);
+	if (beatmap.diff_speed) res.push(`speed=${beatmap.diff_speed.toFixed(1)} ★`);
+	if (beatmap.diff_stamina) res.push(`stamina=${beatmap.diff_stamina.toFixed(1)} ★`);
+	if (beatmap.diff_rhythm) res.push(`rhythm=${beatmap.diff_rhythm.toFixed(1)} ★`);
+	if (beatmap.diff_colour) res.push(`colour=${beatmap.diff_colour.toFixed(1)} ★`);
+	if (beatmap.diff_peak) res.push(`peak=${beatmap.diff_peak.toFixed(1)} ★`);
+	if (beatmap.speed_notes) res.push(`speednotes=${beatmap.speed_notes}`);
+
+	res.push(`https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id}`);
+
+    return res.join(' | ');
 
 }

@@ -3,6 +3,7 @@ const { Op } = require("@sequelize/core");
 const { select_mysql_model, get_connection } = require("mysql-tools");
 
 const { DB_BEATMAPS } = require("../config");
+const { Gamemode } = require("osu-tools");
 
 const GetGamemodeToInt = (mode) => {
     switch (mode) {
@@ -99,68 +100,109 @@ const get_beatmap_pps_by_id = async ({ beatmap_id, beatmapset_id, gamemode = 0, 
 const find_beatmap_pps = async ({ accuracy = 100, gamemode = 0, mods = 0, ranked = 4, pp_min = 0, pp_max = 0, aim = null, speed = null }) => {
 	const osu_beatmap_id = select_mysql_model('beatmap_id');
 	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
+	const taiko_beatmap_pp = select_mysql_model('taiko_beatmap_pp');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 	const osu_beatmap_info = select_mysql_model('beatmap_info');
 
-    let aim_condition = {};
-    let speed_condition = {};
-
 	const osu_beatmaps_connection = get_connection(DB_BEATMAPS);
 
-    if(aim){
-        aim_condition = {
-            pp_aim:{
-                 [Op.gte]: osu_beatmaps_connection.literal(`pp_speed * ${aim}`)
-            }
-        }
-    }
+	if (gamemode == Gamemode.osu) {
 
-    if(speed){
-        speed_condition = {
-            pp_speed:{
-                [Op.gte]: osu_beatmaps_connection.literal(`pp_aim * ${speed}`)
-            }
-        }
-    }
+		let aim_condition = {};
+		let speed_condition = {};
 
-    return await osu_beatmap_pp.findAll({
-        where: { 
-            accuracy, 
-            mods,
-            pp_total: { 
-                [Op.gte]: pp_min, 
-                [Op.lte]: pp_max
-            },
-            ...aim_condition,
-            ...speed_condition
-        },
+		if(aim){
+			aim_condition = {
+				pp_aim:{
+					[Op.gte]: osu_beatmaps_connection.literal(`pp_speed * ${aim}`)
+				}
+			}
+		}
 
-        include: [beatmaps_md5, 
-            { model: osu_beatmap_id, where: { gamemode, ranked } },
-            osu_beatmap_info
-        ],
+		if(speed){
+			speed_condition = {
+				pp_speed:{
+					[Op.gte]: osu_beatmaps_connection.literal(`pp_aim * ${speed}`)
+				}
+			}
+		}
 
-        
-        fieldMap: {
-            'beatmaps_md5.hash': 'md5',
+		return await osu_beatmap_pp.findAll({
+			where: { 
+				accuracy, 
+				mods,
+				pp_total: { 
+					[Op.gte]: pp_min, 
+					[Op.lte]: pp_max
+				},
+				...aim_condition,
+				...speed_condition
+			},
 
-            'beatmaps_md5.id': 'md5_int',
-            'beatmap_id.md5': 'md5_int',
-            'beatmap_info.md5': 'md5_int',
+			include: [beatmaps_md5, 
+				{ model: osu_beatmap_id, where: { gamemode, ranked } },
+				osu_beatmap_info
+			],
 
-            'beatmap_id.beatmap_id': 'beatmap_id',
-            'beatmap_id.beatmapset_id': 'beatmapset_id',
-            'beatmap_id.gamemode': 'gamemode',
-            'beatmap_id.ranked': 'ranked',
+			
+			fieldMap: {
+				'beatmaps_md5.hash': 'md5',
 
-            'beatmap_info.artist': 'artist',
-            'beatmap_info.title': 'title',
-            'beatmap_info.creator': 'creator',
-            'beatmap_info.difficulty': 'difficulty',
-        },
+				'beatmaps_md5.id': 'md5_int',
+				'beatmap_id.md5': 'md5_int',
+				'beatmap_info.md5': 'md5_int',
 
-        raw: true, 
-    });
+				'beatmap_id.beatmap_id': 'beatmap_id',
+				'beatmap_id.beatmapset_id': 'beatmapset_id',
+				'beatmap_id.gamemode': 'gamemode',
+				'beatmap_id.ranked': 'ranked',
+
+				'beatmap_info.artist': 'artist',
+				'beatmap_info.title': 'title',
+				'beatmap_info.creator': 'creator',
+				'beatmap_info.difficulty': 'difficulty',
+			},
+
+			raw: true, 
+		});
+	} else if (gamemode == Gamemode.taiko) {
+		return await taiko_beatmap_pp.findAll({
+			where: { 
+				accuracy, 
+				mods,
+				pp_total: { 
+					[Op.gte]: pp_min, 
+					[Op.lte]: pp_max
+				}
+			},
+
+			include: [beatmaps_md5, 
+				{ model: osu_beatmap_id, where: { gamemode, ranked } },
+				osu_beatmap_info
+			],
+
+			
+			fieldMap: {
+				'beatmaps_md5.hash': 'md5',
+
+				'beatmaps_md5.id': 'md5_int',
+				'beatmap_id.md5': 'md5_int',
+				'beatmap_info.md5': 'md5_int',
+
+				'beatmap_id.beatmap_id': 'beatmap_id',
+				'beatmap_id.beatmapset_id': 'beatmapset_id',
+				'beatmap_id.gamemode': 'gamemode',
+				'beatmap_id.ranked': 'ranked',
+
+				'beatmap_info.artist': 'artist',
+				'beatmap_info.title': 'title',
+				'beatmap_info.creator': 'creator',
+				'beatmap_info.difficulty': 'difficulty',
+			},
+
+			raw: true, 
+		});
+	}
 }
 
 const get_md5_id = async (hash, returning = true) => {

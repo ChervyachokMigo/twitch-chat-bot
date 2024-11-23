@@ -10,7 +10,7 @@ const IntToMods = (mods_int) => {
     let result_mods = [];
 
     if (mods_int === 0){
-        return result_mods;
+        return ['NM'];
     }
 
     for ( let i = 0; i<mod_names.length; i++ ){
