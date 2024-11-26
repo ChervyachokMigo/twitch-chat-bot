@@ -35,6 +35,15 @@ module.exports = {
         return result;
     },
 
+	object_to_args: (obj, spliter = '--') => {
+		let result = [];
+        for (let key in obj){
+            result.push(`${spliter}${key}`);
+			result.push(obj[key]);
+        }
+        return result;
+	},
+
     PermissionToInt: (perm) => {
         switch (perm.toLowerCase()){
             case 'self':

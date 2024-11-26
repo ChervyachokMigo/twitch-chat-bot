@@ -97,7 +97,7 @@ const get_beatmap_pps_by_id = async ({ beatmap_id, beatmapset_id, gamemode = 0, 
     });
 }
 
-const find_beatmap_pps = async ({ accuracy = 100, gamemode = 0, mods = 0, ranked = 4, pp_min = 0, pp_max = 0, aim = null, speed = null }) => {
+const find_beatmap_pps = async (args) => {
 	const osu_beatmap_id = select_mysql_model('beatmap_id');
 	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
 	const taiko_beatmap_pp = select_mysql_model('taiko_beatmap_pp');
@@ -105,6 +105,9 @@ const find_beatmap_pps = async ({ accuracy = 100, gamemode = 0, mods = 0, ranked
 	const osu_beatmap_info = select_mysql_model('beatmap_info');
 
 	const osu_beatmaps_connection = get_connection(DB_BEATMAPS);
+	const { acc = 100, gamemode = 0, mods_int = 0, ranked = 4, pp_min = 0, pp_max = 0, aim = null, speed = null } = args;
+	const mods = mods_int;
+	const accuracy = acc;
 
 	if (gamemode == Gamemode.osu) {
 

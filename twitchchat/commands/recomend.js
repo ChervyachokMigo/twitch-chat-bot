@@ -2,7 +2,7 @@
 const minimist = require('minimist');
 
 const { ALL } = require("../constants/enumPermissions");
-const { find } = require("../tools/Recommends");
+const { find, buffer_size } = require("../tools/Recommends");
 const { GET_TWITCH_OSU_BIND } = require("../../DB");
 const { irc_say } = require("../tools/ircManager");
 const { parseArgs } = require('../../tools/tools');
@@ -16,7 +16,7 @@ module.exports = {
     command_aliases: [`recomend`, `r`, `rec`],
     command_help: `recomend`,
     command_permission: ALL,
-    action: async ({channelname, tags, comargs})=>{
+    action: async ({ channelname, tags, comargs })=>{
 
         const args = parseArgs(comargs, '-');
 		console.log('args', args);
@@ -119,7 +119,7 @@ module.exports = {
             to_osu_user = args.osuname;
         }
 
-        for (let i= 0; i < n ; i++){
+        for (let i = 0; i < n ; i++){
             const beatmap = await find({ gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int });
 
             if (!beatmap){
@@ -135,7 +135,7 @@ module.exports = {
             }
 
             if (to_osu_user) {
-                irc_say(to_osu_user, formatBeatmapInfoOsu(tags.username, beatmap) );
+                irc_say(to_osu_user, formatBeatmapInfoOsu({ username: tags.username, beatmap, n: i + 1 }) );
             }
 
             if (n === 1) {
@@ -149,6 +149,7 @@ module.exports = {
         }
 
         if  (n > 1) {
+			console.log(buffer_size({ gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int }), 'beatmaps осталось');
             return {error: 'sended '+n+' maps'}
         }
 
@@ -156,32 +157,23 @@ module.exports = {
     }
 }
 
-const formatBeatmapInfoOsu = (username, beatmap) => {
+const formatBeatmapInfoOsu = ({ username, beatmap, n }) => {
 	const res = [];
 
-	res.push(username);
-    res.push(`[https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id} ${beatmap.artist} - ${beatmap.title}]`);
+	const url = `https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id}`;
+	const title = `${beatmap.artist} - ${beatmap.title}`;
+
+	res.push(`[${Gamemodes[beatmap.gamemode]}, ${n}] ${username} > [${url} ${title}]`);
 
 	res.push(IntToMods(beatmap.mods).join('+'));
 
 	res.push(`${beatmap.accuracy}%`);
 
-	let pp = [];
-
-	pp.push(`total: ${beatmap.pp_total}pp`);
-	/*if (beatmap.pp_aim) pp.push(`aim: ${beatmap.pp_aim}pp`);
-	if (beatmap.pp_speed) pp.push(`speed: ${beatmap.pp_speed}pp`);
-	if (beatmap.pp_accuracy) pp.push(`accuracy: ${beatmap.pp_accuracy}pp`);
-	if (beatmap.pp_difficulty) pp.push(`diff: ${beatmap.pp_difficulty}pp`);
-	if (beatmap.pp_ur) pp.push(`ur: ${beatmap.pp_ur}pp`);*/
-
-	pp = pp.join(' | ');
-
-	res.push(pp);
+	res.push(`${beatmap.pp_total}pp`);
 
 	if (beatmap.stars) res.push(`${beatmap.stars.toFixed(1)} ★`);
 
-    return res.join(' > ');
+    return res.join(' | ');
 }
 
 const formatMap = (beatmap) => {

@@ -34,7 +34,7 @@ module.exports = {
 
 		if(is_start_calculation){
 			log('calculate pp', moduleName)
-			//await calc_from_mysql('osu');
+			await calc_from_mysql('osu');
 			await calc_from_mysql('taiko');
 		} else {
 			log('calcing pp is switched off, check settings');

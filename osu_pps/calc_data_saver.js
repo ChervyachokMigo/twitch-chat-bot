@@ -2,6 +2,7 @@
 const { MYSQL_SAVE } = require("mysql-tools");
 const { ModsToInt } = require("./osu_mods");
 const { Gamemode } = require("osu-tools");
+const { Gamemodes } = require("../DB/beatmaps");
 
 let calculated_chunk_data = {
 	[Gamemode.osu]: [],
@@ -69,10 +70,12 @@ module.exports = {
 			const data = calculated_chunk_data[g].slice();
 			calculated_chunk_data[g] = [];
 			if (data && data.length > 0){
+				console.log(`save_calculated_data > ${Gamemodes[g]} > ${data.length} rows`);
 				if (g == Gamemode.osu) {
 					await MYSQL_SAVE('osu_beatmap_pp', data );
 				} else if (g == Gamemode.taiko) {
-                    await MYSQL_SAVE('taiko_beatmap_pp', data );
+                    const res = await MYSQL_SAVE('taiko_beatmap_pp', data );
+					console.log('save res', res.length);
                 } else {
                     //skip other modes
                 }

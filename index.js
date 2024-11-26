@@ -12,8 +12,9 @@ const { twitchchat_load_events } = require("./twitchchat/tools/GuildEvents.js");
 const { setInfinityTimerLoop } = require("./tools/tools.js");
 const log = require("./tools/log.js");
 const { init_user_stats } = require('./DB/stats.js');
-const change_title = require('./requests/change_title.js');
 const oauth = require('./twitchchat/tools/oauth_token.js');
+const get_channel_info = require('./requests/get_channel_info.js');
+const bot_key_events = require('./twitchchat/tools/bot_key_events.js');
 
 const main = async () => {
     process.title = 'twitch_chat_bot';
@@ -35,6 +36,13 @@ const main = async () => {
 		await oauth.init();
 		
 		console.log('bot started');
+
+		const channel_info = await get_channel_info('478880338');
+
+		console.log(`[${channel_info.broadcaster_name} > ${channel_info.game_name} > ${channel_info.title}]`);
+	
+		bot_key_events.init();
+
 	} catch (e) {
 		console.error(__dirname, e);
 		const str_error = [

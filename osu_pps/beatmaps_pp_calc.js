@@ -288,7 +288,7 @@ const init_key_events = () => {
 
     keypress(process.stdin);
 
-   print_help();
+    print_help();
 
 
     process.stdin.on('keypress', async (ch, key) => {
