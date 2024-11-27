@@ -3,7 +3,7 @@ const { Op } = require("@sequelize/core");
 const { select_mysql_model, get_connection } = require("mysql-tools");
 
 const { DB_BEATMAPS } = require("../config");
-const { Gamemode } = require("osu-tools");
+const { Gamemode, RankedStatus, ModsTextToInt } = require("osu-tools");
 
 const GetGamemodeToInt = (mode) => {
     switch (mode) {
@@ -55,7 +55,13 @@ const get_beatmap_id = async ({ md5 }) => {
     });
 }
 
-const get_beatmap_pps_by_id = async ({ beatmap_id, beatmapset_id, gamemode = 0, mods = 0, ranked = 4 }) => {
+const get_beatmap_pps_by_id = async ({ 
+	beatmap_id, 
+	beatmapset_id, 
+	gamemode = Gamemode.osu, 
+	mods = ModsTextToInt(['No Mods']), 
+	ranked = RankedStatus.ranked  
+}) => {
     if (typeof beatmap_id !== 'number' && typeof beatmapset_id !== 'number' && 
     beatmap_id > 0 && beatmapset_id > 0 ){
         return null;
@@ -288,5 +294,6 @@ module.exports = {
     get_beatmap_pps_by_id,
     find_beatmap_pps,
     get_beatmap_id,
-    GetGamemodeToInt
+    GetGamemodeToInt,
+	
 }

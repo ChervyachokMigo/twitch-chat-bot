@@ -5,6 +5,7 @@ const { GetGamemodeToInt, get_beatmap_pps_by_id } = require('../DB/beatmaps.js')
 const { checkTokenExpires } = require (`./requests.js`);
 const log = require('../tools/log.js');
 const { getFixedFloat } = require('../tools/tools.js');
+const { beatmapset_url_parse } = require('../twitchchat/tools/beatmap_url_parse.js');
 
 async function get_score_info_bancho (score_id, gamemode) {
     if (!await checkTokenExpires('osu')){
@@ -24,21 +25,11 @@ async function get_score_info_bancho (score_id, gamemode) {
 module.exports = {
     getBeatmapInfoByUrl: async (url) => {
 
-        const url_parts = url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
+        const request = beatmapset_url_parse(url);
 
-        if (url_parts === null) {
-            return {error: `ссылка не битмапсет`};
-        }
-
-        const request = {
-            beatmapset_id: url_parts[1]? Number(url_parts[1]): null,
-            gamemode: url_parts[3]? GetGamemodeToInt(url_parts[3]): null,
-            beatmap_id: url_parts[4]? Number(url_parts[4]): null
-        };
-
-        if ( ! (request.beatmapset_id && request.beatmap_id) ){
-            return { error: `ссылка не полная` };
-        }
+		if (request.error) {
+			return request;
+		}
 
         let beatmap_pps = await get_beatmap_pps_by_id({...request });
         beatmap_pps.sort( (a, b) => b.accuracy - a.accuracy );
@@ -89,7 +80,7 @@ module.exports = {
         }
 
         return {success: {
-                url: url_parts[0], pps: beatmap_pps
+                url, pps: beatmap_pps
                 /*id: beatmap.beatmap_id,
                 md5: beatmap.md5,
                 artist: beatmap.artist, 

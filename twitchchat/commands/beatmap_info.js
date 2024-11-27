@@ -4,6 +4,7 @@ const { ALL } = require('../constants/enumPermissions.js');
 const { irc_say } = require('../tools/ircManager.js');
 
 const { ModerationName } = require('../constants/general.js');
+const { formatBeatmapInfoOsu, formatMap } = require('../tools/format_beatmap.js');
 
 module.exports = {
     command_name: `beatmap_info`,
@@ -45,13 +46,13 @@ module.exports = {
         const osu_bind = await GET_TWITCH_OSU_BIND(tags['user-id']);
 
         if (osu_bind) {
-            irc_say(osu_bind.osu_name, formatBeatmapInfoOsu(tags.username, beatmap_info.success) );
+            irc_say(osu_bind.osu_name, formatBeatmapInfoOsu({ username: tags.username, beatmap: beatmap_info.success.pps[0], n: 1 }) );
         }
 
-        return  {success: formatBeatmapInfoTwitch(beatmap_info.success)}
+        return  {success: formatMap({ beatmap: beatmap_info.success.pps[0], short: true }) }
     }
 }
-
+/*
 const formatBeatmapInfoOsu = (username, {url, pps}) => {
 
     const url_text = `[${url} ${pps[0].artist} - ${pps[0].title} [${pps[0].difficulty}] by ${pps[0].creator}] >`;
@@ -60,10 +61,10 @@ const formatBeatmapInfoOsu = (username, {url, pps}) => {
         pps[0].ranked,
         `${pps[0].stars} ★`,
 
-        /*`
+        `
         `${info.bpm} BPM`,
         `${info.max_combo}x`,
-        `${formatAddZero(Math.trunc(info.length / 60), 2)}:${formatAddZero(info.length % 60, 2)}`,*/
+        `${formatAddZero(Math.trunc(info.length / 60), 2)}:${formatAddZero(info.length % 60, 2)}`,
         pps.length > 0 ? pps.map( val => `${val.accuracy}% > ${val.pp_total}pp`).join(' | '): ''
     ].join(' | ');
 
@@ -77,14 +78,15 @@ const formatBeatmapInfoTwitch = ({ pps }) => {
         `${pps[0].gamemode}`,
         `${pps[0].ranked}`,
         `${pps[0].stars} ★`,
-        /*
+        
         `${info.bpm} BPM`,
         `Length: ${formatAddZero(Math.trunc(info.length / 60), 2)}:${formatAddZero(info.length % 60, 2)}`,
         `${info.max_combo}x`,
         `AR: ${info.ar}`,
         `CS: ${info.cs}`,
         `OD: ${info.od}`,
-        `HP: ${info.hp}`,*/
+        `HP: ${info.hp}`,
         pps.length > 0 ? pps.map( val => `${val.accuracy}% > ${val.pp_total}pp`).join(' ▸'): 'no calc pp'
     ].join(' ▸');
 }
+*/
