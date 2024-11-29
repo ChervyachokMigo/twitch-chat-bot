@@ -1,4 +1,4 @@
-const dashboard = require('dashboard_framework')
+const dashboard = require('dashboard_framework');
 
 module.exports = async () => {
 	console.log('Initializing dashboard...');
@@ -19,4 +19,18 @@ module.exports = async () => {
 
     await dashboard.css_apply({selector: '.feed', prop: 'color', value: '#eee'});
 	await dashboard.css_apply({selector: '.feed', prop: 'text-shadow', value: '1px 1px 2px black'});
+
+	await dashboard.css_apply({selector: '.sorted', prop: 'display', value: 'flex'});
+	await dashboard.css_apply({selector: '.sorted', prop: 'align-items', value: 'flex-end'});
+	await dashboard.css_apply({selector: '.sorted', prop: 'margin-right', value: '20px'});
+	await dashboard.css_apply({selector: '.sorted', prop: 'flex-direction', value: 'column'});
+	await dashboard.css_apply({selector: '.sorted', prop: 'margin-top', value: '300px'});
+	await dashboard.css_apply({selector: '.sorted', prop: 'color', value: 'white'});
+	await dashboard.css_apply({selector: '.sorted', prop: 'text-shadow', value: ' 2px 2px 2px black' });
+
+	await dashboard.css_apply({selector: '.sorted_item', prop: 'font-size', value: '24px'});
+	await dashboard.css_apply({selector: '.sorted_item', prop: 'display', value: 'flex'});
+	await dashboard.css_apply({selector: '.sorted_item', prop: 'flex-direction', value: 'row'});
+	await dashboard.css_apply({selector: '.sorted_item > .item_name', prop: 'padding-right', value: '8px'});
+
 }

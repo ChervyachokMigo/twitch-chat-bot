@@ -46,5 +46,6 @@ module.exports = {
 		const values = {...user_from_cache, joinscount};
 		update_cache_values(values);
 		await MYSQL_SAVE(mysql_action, {...user_from_cache, joinscount}, false);
-	}
+	},
+
 }
