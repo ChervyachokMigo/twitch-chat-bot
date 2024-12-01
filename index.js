@@ -19,6 +19,7 @@ const bot_key_events = require('./twitchchat/tools/bot_key_events.js');
 const main = async () => {
     process.title = 'twitch_chat_bot';
     try {
+
 		await prepareDB();
 		await init_user_stats();
 		

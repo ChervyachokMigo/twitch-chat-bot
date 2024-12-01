@@ -4,8 +4,11 @@ const { parseArgs, object_to_args } = require('../../tools/tools');
 const bind_recommend_maps = './bind_recommend_maps.json';
 const keypress = require('keypress');
 const recomend_command = require('../commands/recomend.js');
+const { join, leave } = require('../../DB/watching.js');
 
 let last_args = null;
+
+let is_join = false;
 
 module.exports = {
 	init: () => {
@@ -21,6 +24,16 @@ module.exports = {
 			if (!key) {
 				return;
 			}
+
+			// if (key.name == 'q') {
+			// 	if (!is_join){
+			// 		await join('pupka');
+			// 		await join('pupk1');
+			// 	} else {
+			// 		await leave('pupka')
+			// 	}
+			// 	is_join = !is_join
+			// }
 
 			if (key.name == 'r') {
 				console.log('sended requests');

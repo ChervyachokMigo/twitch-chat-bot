@@ -1,5 +1,7 @@
 
 const { Client } = require('tmi.js');
+const path = require('path');
+
 
 const log = require("../tools/log.js");
 
@@ -21,8 +23,11 @@ const { inc_joins } = require('../DB/stats.js');
 const change_title = require('../requests/change_title.js');
 const get_user_id = require('../requests/get_user_id.js');
 const watching = require('../DB/watching.js');
+const { play_sound } = require('./tools/play_sound.js');
 
 const moduleName = `Twitch Chat`;
+
+const join_sound_filepath = path.join(__dirname, '..', 'sounds', 'HL_C1A0_START.ogg');
 
 this.twitchchat_client = null;
 
@@ -77,9 +82,12 @@ const twitchchat_init = async() => {
         const new_channelname = channelname.replace('#', '');
         if (new_channelname === ModerationName){
             log(`[${new_channelname}] ${username} > подключен к чату`, moduleName);
+			
 			await inc_joins( username );
-			await watching.join( username );
+			
             if (username !== ModerationName){
+				await watching.join( username );
+				play_sound( join_sound_filepath );
                 //await this.twitchchat_client.say(new_channelname, `@${username}, привет` );
             } else {
                //await this.twitchchat_client.say(new_channelname, `@${username}, привет единственный зритель` );
@@ -89,8 +97,11 @@ const twitchchat_init = async() => {
 
 	this.twitchchat_client.on('part', async (channelname, username) => {
         const new_channelname = channelname.replace('#', '');
-		watching.leave( username );
+		
         if (new_channelname === ModerationName){
+			if (username !== ModerationName) {
+				await watching.leave( username );
+			}
             log(`[${new_channelname}] ${username} > отключен от чата`, moduleName);
         }
     });

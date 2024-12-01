@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=app.env index.js --inspect",
-	"start_calc": "node --env-file=app.env calc_start.js --inspect"
+    "start_calc": "node --env-file=app.env calc_start.js --inspect"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +26,7 @@
     "osu-api-extended": "^2.7.67",
     "osu-md5-storage-archive": "github:ChervyachokMigo/osu-md5-storage-archive",
     "osu-tools": "github:ChervyachokMigo/osu-tools",
+    "play-sound": "^1.1.6",
     "tmi.js": "^1.8.5"
   }
 }
