@@ -27,7 +27,10 @@ const { play_sound } = require('./tools/play_sound.js');
 
 const moduleName = `Twitch Chat`;
 
-const join_sound_filepath = path.join(__dirname, '..', 'sounds', 'HL_C1A0_START.ogg');
+const sounds_path =  path.join(__dirname, '..', 'sounds' );
+
+const join_sound_filepath = path.join(sounds_path, 'HL_C1A0_START.ogg');
+const leave_sound_filepath = path.join(sounds_path, 'Hl_sorryimleaving.ogg');
 
 this.twitchchat_client = null;
 
@@ -84,13 +87,15 @@ const twitchchat_init = async() => {
             log(`[${new_channelname}] ${username} > подключен к чату`, moduleName);
 			
 			await inc_joins( username );
-			
+
             if (username !== ModerationName){
 				await watching.join( username );
 				play_sound( join_sound_filepath );
                 //await this.twitchchat_client.say(new_channelname, `@${username}, привет` );
             } else {
-               //await this.twitchchat_client.say(new_channelname, `@${username}, привет единственный зритель` );
+				//if I am join
+				//await watching.join( username );
+              	//await this.twitchchat_client.say(new_channelname, `@${username}, привет единственный зритель` );
             }
         }
     });
@@ -101,6 +106,7 @@ const twitchchat_init = async() => {
         if (new_channelname === ModerationName){
 			if (username !== ModerationName) {
 				await watching.leave( username );
+				play_sound( leave_sound_filepath );
 			}
             log(`[${new_channelname}] ${username} > отключен от чата`, moduleName);
         }
@@ -118,6 +124,9 @@ const twitchchat_init = async() => {
         //await onMessage(this.twitchchat_client, channel, tags, message, self, TwitchChatIgnoreChannels)
 		await onMessage(this.twitchchat_client, channel, tags, message, self, [])
     });
+
+	watching.init();
+	setInterval( () => watching.save_list(), 60000 );
 
     return await this.twitchchat_client.connect();
 }

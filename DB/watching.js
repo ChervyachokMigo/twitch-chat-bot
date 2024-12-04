@@ -1,8 +1,18 @@
 const dashboard = require('dashboard_framework');
+const { existsSync, readFileSync, writeFileSync } = require('fs');
+const path = require('path');
+
+const list_path = path.join('data', 'watching_users.json');
+
+let old_list = null;
 
 const users_watching = [];
 
+
 module.exports = {
+	init: () => {
+		old_list = existsSync(list_path)? JSON.parse(readFileSync(list_path, { encoding: 'utf8' })) : [];
+	},
 	
 	join: async ( username ) => {
 		let i = users_watching.findIndex( v => v.username === username);
@@ -34,5 +44,32 @@ module.exports = {
         } else {
 			console.error(`leave: user ${username} is not exists`);
 		}
+	},
+
+	get_list: () => users_watching,
+
+	save_list: () => {
+		
+		let is_changed = false;
+		for (let item of users_watching) {
+			const idx = old_list.findIndex( v => v.username === item.username );
+            if (idx > -1) {
+				const diff = parseInt(item.value)- parseInt(old_list[idx].value);
+				if (diff > 0) {
+					old_list[idx].value = parseInt(old_list[idx].value) + diff;
+					is_changed = true;
+				}
+            } else {
+				old_list.push({ username: item.username, value: parseInt(item.value) });
+				is_changed = true;
+			}
+		}
+
+		if (is_changed) {
+			writeFileSync(list_path, JSON.stringify(old_list));
+			//console.log('Saved watching users list');
+		}
+
 	}
+
 }
