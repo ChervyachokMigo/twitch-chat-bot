@@ -24,6 +24,7 @@ const change_title = require('../requests/change_title.js');
 const get_user_id = require('../requests/get_user_id.js');
 const watching = require('../DB/watching.js');
 const { play_sound } = require('./tools/play_sound.js');
+const { is_sound_notify } = require('../settings.js');
 
 const moduleName = `Twitch Chat`;
 
@@ -90,7 +91,9 @@ const twitchchat_init = async() => {
 
             if (username !== ModerationName){
 				await watching.join( username );
-				play_sound( join_sound_filepath );
+				if (is_sound_notify) {
+					play_sound( join_sound_filepath );
+				}
                 //await this.twitchchat_client.say(new_channelname, `@${username}, привет` );
             } else {
 				//if I am join
@@ -106,7 +109,9 @@ const twitchchat_init = async() => {
         if (new_channelname === ModerationName){
 			if (username !== ModerationName) {
 				await watching.leave( username );
-				play_sound( leave_sound_filepath );
+				if (is_sound_notify) {
+					play_sound( leave_sound_filepath );
+				}
 			}
             log(`[${new_channelname}] ${username} > отключен от чата`, moduleName);
         }

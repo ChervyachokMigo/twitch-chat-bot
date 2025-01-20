@@ -3,6 +3,8 @@ const { select_mysql_model } = require("mysql-tools");
 const { PermissionToInt, parseArgs } = require("../../tools/tools");
 const { SELF } = require("../constants/enumPermissions");
 
+// !create_command --names command --perm all --text text
+
 module.exports = {
     command_name: `create_command`,
     command_description: `Создать команду`,

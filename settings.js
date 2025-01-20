@@ -15,4 +15,5 @@ module.exports = {
 	
     is_calc: false,
     is_skip_check: true,
+	is_sound_notify: false
 }

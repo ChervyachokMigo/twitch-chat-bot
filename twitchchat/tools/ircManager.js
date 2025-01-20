@@ -2,23 +2,20 @@ const ircClient = require('node-irc');
 const { osu_irc_args } = require('../../config');
 const [ server, port, username, password ] = osu_irc_args;
 
-/*client.on('PRIVMSG', (args) => {
-    console.log('privmsg:' , args)
-});*/
-
-
-this.client = null;
+let client = null;
 
 module.exports = {
     init_osu_irc: () => {
 		console.log('connection osu irc');
-        this.client = new ircClient(server, port, username, username, password);
-        this.client.verbosity = 0;
-        this.client.connect();
-
+        client = new ircClient(server, port, username, username, password);
+        client.verbosity = 0;
+        client.connect();
+		/*client.on('PRIVMSG', (args) => {
+			console.log('privmsg:' , args)
+		});*/
     },
 
     irc_say: (username, text)=> {
-        this.client.say(username, text);
+        client.say(username, text);
     }
 }

@@ -32,7 +32,7 @@ const main = async () => {
 		
 		twitchchat_load_events();
 		
-		await beatmaps_db.init();
+		//await beatmaps_db.init();
 
 		await oauth.init();
 		
