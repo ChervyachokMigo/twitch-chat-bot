@@ -2,7 +2,9 @@ module.exports = {
 
     osu_md5_storage: 'D:\\osu_md5_storage',
 	beatmaps_cache: 'beatmaps_cache',
-
+	osu_laser_files: 'D:\\osu!laser\\files',
+	osu_laser_realm: 'D:\\osu!laser\\client.realm',
+	
     osuPath: `D:\\osu!`,
 
     ChatRefreshRate: 10,

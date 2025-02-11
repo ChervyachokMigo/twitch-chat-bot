@@ -165,6 +165,7 @@ const calcAction = (input) => {
 				const data = { md5_int, ...JSON.parse(result), mods };
                 calc_result_add (data);
             } catch (e){
+				console.log(result);
                 console.error(`calc > error > something wrong with beatmap ${md5}.osu`);
             }
         } else {
