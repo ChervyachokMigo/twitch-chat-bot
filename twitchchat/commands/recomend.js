@@ -121,7 +121,8 @@ const _this = module.exports = {
 			}
 
 			for (let i = 0; i < n ; i++){
-				const beatmap = await find({ gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int });
+				const beatmap_params = { gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int };
+				const beatmap = await find(beatmap_params);
 
 				if (!beatmap){
 					return {error: '[recomend] > error no founded beatmap'}
@@ -150,15 +151,16 @@ const _this = module.exports = {
 			}
 
 			if  (n > 1) {
-				console.log(buffer_size({ gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int }), 'beatmaps осталось');
+				console.log(buffer_size(beatmap_params), 'beatmaps осталось');
 				return {error: 'sended '+n+' maps'}
 			}
 
 			return {error: '[recomend] > error beatmap id'}
 
 		} catch(e) {
-			console.error(`!${_this.command_name} > ${e.code} > [${e.response.status}] ${e.response.statusText}`);
-			return {error: `!${_this.command_name} > ${e.code} > [${e.response.status}] ${e.response.statusText}`};
+			console.error(e);
+			console.error(`!${_this?.command_name} > ${e?.code} > [${e?.response?.status}] ${e?.response?.statusText}`);
+			return {error: `!${_this?.command_name} > ${e?.code} > [${e?.response?.status}] ${e?.response?.statusText}`};
 			
 		}
     }

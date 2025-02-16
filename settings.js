@@ -11,8 +11,8 @@ module.exports = {
 
     mysql_chunk_size: 500,
 
-    calc_MaxExecuting: 10,
-    calc_StartExecuting: 10,
+    calc_MaxExecuting: 3,
+    calc_StartExecuting: 3,
     is_key_events: true,
 	
     is_calc: false,

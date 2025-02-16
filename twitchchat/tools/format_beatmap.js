@@ -24,7 +24,7 @@ module.exports = {
 		if (beatmap.diff_peak && short === false)	  res.push(`peak=${beatmap.diff_peak.toFixed(1)} ★`);
 		if (beatmap.speed_notes && short === false)	  res.push(`speednotes=${beatmap.speed_notes}`);
 
-		//res.push(`https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id}`);
+		res.push(`https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id}`);
 
 		return res.join(' | ');
 

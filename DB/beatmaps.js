@@ -123,7 +123,7 @@ const find_beatmap_pps = async (args) => {
 		if(aim){
 			aim_condition = {
 				pp_aim:{
-					[Op.gte]: osu_beatmaps_connection.literal(`pp_speed * ${aim}`)
+					[Op.gte]: osu_beatmaps_connection.connection.literal(`pp_speed * ${aim}`)
 				}
 			}
 		}
@@ -131,7 +131,7 @@ const find_beatmap_pps = async (args) => {
 		if(speed){
 			speed_condition = {
 				pp_speed:{
-					[Op.gte]: osu_beatmaps_connection.literal(`pp_aim * ${speed}`)
+					[Op.gte]: osu_beatmaps_connection.connection.literal(`pp_aim * ${speed}`)
 				}
 			}
 		}

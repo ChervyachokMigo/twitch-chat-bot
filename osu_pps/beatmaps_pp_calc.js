@@ -97,7 +97,6 @@ const ActionsController =  async () => {
 				await save_calculated_data();
 				const completed = actions_max - next_actions.length;
 				console.log(`completed: ${(completed/actions_max * 100).toFixed(1)} %`);
-				return;
 			}
 			
 		}
