@@ -13,6 +13,7 @@
   "dependencies": {
     "@sequelize/core": "^7.0.0-alpha.37",
     "axios": "^1.6.2",
+    "colors": "^1.4.0",
     "dashboard_framework": "github:ChervyachokMigo/dashboard_framework",
     "express": "^4.18.2",
     "express-subdomain": "^1.0.5",

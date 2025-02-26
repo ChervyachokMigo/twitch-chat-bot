@@ -10,6 +10,8 @@ const { sendIfLongLength, saveMessageInBuffer } = require("../tools/MessageForwa
 const manageMessage = require("../tools/manageMessage");
 const { calc_message } = require("../../DB/stats.js");
 
+require('colors');
+
 const moduleName = 'Twitch Chat'
 
 module.exports = async (twitchchat_client, channel, tags, message, self, TwitchChatIgnoreChannels) => {
@@ -31,7 +33,7 @@ module.exports = async (twitchchat_client, channel, tags, message, self, TwitchC
     //await axios.post ('http://localhost:1111/add_message', {channelname, username, text: message});
     
 	//console.log( {channelname, username, text: message} );
-	console.log(`[${channelname}] ${tags.username} > ${message} `);
+	console.log(`[${channelname}] ${tags.username} > ${message} `.green);
 
 	await dashboard.emit_event({
         feedname: 'last_message',

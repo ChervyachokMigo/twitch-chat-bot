@@ -11,25 +11,25 @@ const oauth = require('./twitchchat/tools/oauth_token.js');
 
 const main = async () => {
     process.title = 'calculation_pp';
-    try {
+    
 		await prepareDB();
 		
 		await beatmaps_db.init(true);
 
 		console.log('finished');
 		
-	} catch (e) {
-		console.error(__dirname, e);
-		const str_error = [
-			new Date().toISOString().slice(0, 19).replace('T',' '),
-			e.name,
-			e.message,
-			e.stack,
-			e.toString()
-		].join(' ');
-		appendFileSync('errors.log', str_error + '\n');
-		throw new Error(e)
-	}
+	// } catch (e) {
+	// 	console.error(__dirname, e);
+	// 	const str_error = [
+	// 		new Date().toISOString().slice(0, 19).replace('T',' '),
+	// 		e.name,
+	// 		e.message,
+	// 		e.stack,
+	// 		e.toString()
+	// 	].join(' ');
+	// 	appendFileSync('errors.log', str_error + '\n');
+	// 	throw new Error(e)
+	// }
 }
 
 main();

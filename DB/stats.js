@@ -28,6 +28,9 @@ module.exports = {
 	},
 
 	calc_message: async (user, {text}) => {
+		if (!user?.usercolor) {
+			user.usercolor = '#FFFFFF';
+		}
 		const user_from_cache = get_user_stats(user);
 		const charscount = user_from_cache.charscount + text.length;
 		const messagescount = user_from_cache.messagescount + 1;
