@@ -50,7 +50,7 @@ module.exports = {
             if (key.name == 'd') {
 				const args = parseArgs(last_args.comargs, '-');
 				args.pp = parseInt(args.pp) - 5;
-				console.log('dencrease pp by 5, now:', args.pp);
+				console.log('decrease pp by 5, now:', args.pp);
 				last_args.comargs = object_to_args(args, '-');
 			}
 			

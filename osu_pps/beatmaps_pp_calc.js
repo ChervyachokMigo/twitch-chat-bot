@@ -36,11 +36,6 @@ const ranked_status = {
     ranked: 4
 }
 
-//20 - 47, 1:33
-//15 - 48
-//12 - 46, 1:34
-//10 - 49, 1:39
-
 let maxExecuting = calc_StartExecuting;
 
 let ignored_beatmaps = new Set();

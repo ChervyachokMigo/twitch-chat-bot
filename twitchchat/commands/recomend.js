@@ -119,9 +119,11 @@ const _this = module.exports = {
 			if(args.osuname){
 				to_osu_user = args.osuname;
 			}
+			
+			const beatmap_params = { gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int };
 
 			for (let i = 0; i < n ; i++){
-				const beatmap_params = { gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int };
+				
 				const beatmap = await find(beatmap_params);
 
 				if (!beatmap){
