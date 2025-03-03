@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=app.env index.js --inspect",
-    "start_calc": "node --env-file=app.env calc_start.js --inspect"
+    "start_calc": "node --env-file=app.env calc_start.js --inspect",
+	"update_beatmap_params": "node --env-file=app.env update_beatmap_params.js --inspect"
   },
   "keywords": [],
   "author": "",

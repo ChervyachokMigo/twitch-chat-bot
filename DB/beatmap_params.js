@@ -19,9 +19,9 @@ const props = [
 const max_int32 = Math.abs(Math.pow(2, 31) - 1);
 
 module.exports = {
-	update_beatmap_params: async (is_skip_update_beatmaps = false) => {
+	update_beatmap_params: async (is_update_beatmaps = true) => {
 
-		if(is_skip_update_beatmaps) {
+		if( !is_update_beatmaps ) {
             console.log('Skipped updating beatmap params');
             return;
         }
@@ -44,6 +44,11 @@ module.exports = {
 			if (i % part_size === 0) {
 				console.log('processed:', i, '/', filelist.size); 
 			}
+			
+			if (!md5) {
+				console.log(`Beatmap ${md5} is null`);
+                continue;
+			}
 
 			const id = await get_md5_id(md5);
 			
@@ -64,7 +69,7 @@ module.exports = {
 			if( !beatmap_list_cache.has(md5) ){
 				const file = await storage.read_one(md5);
 				fs.writeFileSync(filepath, file.data);
-				console.log(`Extracted ${md5} from storage`);
+				//process.stdout.write(`Extracted ${md5} from storage\r`);
 			}
 		
 			const beatmap_data = parse_osu_file(filepath, props, { is_hit_objects_only_count: false });
@@ -76,12 +81,12 @@ module.exports = {
 
 			const mysql_data = {
 				md5: id,
-				bpm_min: beatmap_data.general.bpm.min,
-				bpm_max: beatmap_data.general.bpm.max > max_int32 ? max_int32 : beatmap_data.general.bpm.max ,
-				bpm_avg: beatmap_data.general.bpm.avg > max_int32 ? max_int32 : beatmap_data.general.bpm.avg ,
-				total_time: beatmap_data.general.total_time,
-				drain_time: beatmap_data.general.drain_time,
-				break_time: beatmap_data.general.break_time,
+				bpm_min: Math.trunc(beatmap_data.general.bpm.min),
+				bpm_max: beatmap_data.general.bpm.max > max_int32 ? max_int32 : Math.trunc(beatmap_data.general.bpm.max),
+				bpm_avg: beatmap_data.general.bpm.avg > max_int32 ? max_int32 : Math.trunc(beatmap_data.general.bpm.avg),
+				total_time: Math.trunc(beatmap_data.general.total_time),
+				drain_time: Math.trunc(beatmap_data.general.drain_time),
+				break_time: Math.trunc(beatmap_data.general.break_time),
 
 				hit_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.hitcircle) || []).length,
 				slider_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.slider) || []).length,

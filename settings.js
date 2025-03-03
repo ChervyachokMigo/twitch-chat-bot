@@ -16,8 +16,9 @@ module.exports = {
     is_key_events: true,
 	
     is_start_calculation: false,
+	is_start_update_beatmaps: false,
+	
     is_skip_check: true,
-	is_skip_update_beatmaps: false,
 	is_sound_notify: false,
 
 	update_channel_info_sec: 180,

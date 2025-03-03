@@ -1,0 +1,1 @@
+npm run update_beatmap_params

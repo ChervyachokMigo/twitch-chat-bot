@@ -5,7 +5,7 @@ const main = async () => {
     process.title = 'calculation_pp';
     
 	await prepareDB();
-	await beatmaps_db.init(false, true);
+	await beatmaps_db.init(true, false);
 
 	console.log('finished');
 }
