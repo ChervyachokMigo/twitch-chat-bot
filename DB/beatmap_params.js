@@ -27,7 +27,9 @@ module.exports = {
         }
 
 		const filelist = storage.get_filelist({ is_raw: true, is_set: true});
-		const part_size = Math.trunc(filelist.size / 5000);
+		const part_size = Math.trunc(filelist.size / 1000);
+
+		const beatmap_list_cache = new Set(fs.readdirSync(beatmaps_cache, { encoding: 'utf8' }).map( v => v.slice(0, -4) ));
 
 		await init_md5_cache();
 
@@ -59,50 +61,40 @@ module.exports = {
 
 			const filepath = path.join(beatmaps_cache, md5 + '.osu');
 
-			let beatmap_data = null;
-			
-			try {
+			if( !beatmap_list_cache.has(md5) ){
+				const file = await storage.read_one(md5);
+				fs.writeFileSync(filepath, file.data);
+				console.log(`Extracted ${md5} from storage`);
+			}
 		
-				if( !fs.existsSync(filepath) ){
-					const file = await storage.read_one(md5);
-					fs.writeFileSync(filepath, file.data);
-					console.log(`Extracted ${md5} from storage`);
-				}
-			
-				beatmap_data = parse_osu_file(filepath, props, { is_hit_objects_only_count: false });
+			const beatmap_data = parse_osu_file(filepath, props, { is_hit_objects_only_count: false });
 
-				if (!beatmap_data.general || !beatmap_data.general.bpm) {
-					console.log('No bpm found for', md5);
-					continue;
-				}
+			if (!beatmap_data.general || !beatmap_data.general.bpm) {
+				console.log('No bpm found for', md5);
+				continue;
+			}
 
-				const mysql_data = {
-					md5: id,
-					bpm_min: beatmap_data.general.bpm.min,
-					bpm_max: beatmap_data.general.bpm.max > max_int32 ? max_int32 : beatmap_data.general.bpm.max ,
-					bpm_avg: beatmap_data.general.bpm.avg > max_int32 ? max_int32 : beatmap_data.general.bpm.avg ,
-					total_time: beatmap_data.general.total_time,
-					drain_time: beatmap_data.general.drain_time,
-					break_time: beatmap_data.general.break_time,
+			const mysql_data = {
+				md5: id,
+				bpm_min: beatmap_data.general.bpm.min,
+				bpm_max: beatmap_data.general.bpm.max > max_int32 ? max_int32 : beatmap_data.general.bpm.max ,
+				bpm_avg: beatmap_data.general.bpm.avg > max_int32 ? max_int32 : beatmap_data.general.bpm.avg ,
+				total_time: beatmap_data.general.total_time,
+				drain_time: beatmap_data.general.drain_time,
+				break_time: beatmap_data.general.break_time,
 
-					hit_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.hitcircle) || []).length,
-					slider_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.slider) || []).length,
-					spinner_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.spinner) || []).length,
+				hit_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.hitcircle) || []).length,
+				slider_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.slider) || []).length,
+				spinner_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.spinner) || []).length,
 
-					stream_difficulty: beatmap_data.difficulty.stream_difficulty > max_int32 ? max_int32 : beatmap_data.difficulty.stream_difficulty,
-				}
+				stream_difficulty: beatmap_data.difficulty.stream_difficulty > max_int32 ? max_int32 : beatmap_data.difficulty.stream_difficulty,
+			}
 
-				mysql_save_data.push(mysql_data);
+			mysql_save_data.push(mysql_data);
 
-				if (mysql_save_data.length >= 100) {
-					await MYSQL_SAVE('beatmap_params', mysql_save_data, true);
-					mysql_save_data = [];
-				}
-
-			} catch (e) {
-				console.error('beatmap_data', beatmap_data);
-				console.error('mysql_save_data', mysql_save_data);
-				throw new Error(e);
+			if (mysql_save_data.length >= 100) {
+				await MYSQL_SAVE('beatmap_params', mysql_save_data, true);
+				mysql_save_data = [];
 			}
 
 		} // end for
