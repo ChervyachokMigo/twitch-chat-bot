@@ -1,18 +1,14 @@
 const storage = require("osu-md5-storage-archive");
 const { md5_stock_compare, make_beatmaps_db } = require("./osu_pps/beatmaps_md5_stock");
 const { calc_from_mysql } = require("./osu_pps/beatmaps_pp_calc");
-const { osuPath, osu_md5_storage, is_calc, osu_laser_files, osu_laser_realm } = require("./settings");
+const { osuPath, osu_md5_storage, osu_laser_files, osu_laser_realm, is_start_calculation, is_skip_update_beatmaps } = require("./settings");
 const log = require("./tools/log");
+const { update_beatmap_params } = require("./DB/beatmap_params");
 
 const moduleName = 'Beatmaps db';
 
 module.exports = {
-    init: async (is_start_calculation) => {
-
-		if (typeof is_start_calculation === 'undefined') {
-			//load from settings
-			is_start_calculation = is_calc;
-		}
+    init: async () => {
 
 		if (!process.env.api_key){
 			console.log('Error: No API key provided.');
@@ -34,6 +30,8 @@ module.exports = {
 
 		const new_files = await storage.laser.update_storage_from_realm();
 		await storage.check_files_by_list(new_files);
+
+		await update_beatmap_params(is_skip_update_beatmaps);
 
 		if(is_start_calculation){
 			log('calculate pp', moduleName)

@@ -12,11 +12,11 @@ const oauth = require('./twitchchat/tools/oauth_token.js');
 const main = async () => {
     process.title = 'calculation_pp';
     
-		await prepareDB();
-		
-		await beatmaps_db.init(true);
+	await prepareDB();
+	
+	await beatmaps_db.init();
 
-		console.log('finished');
+	console.log('finished');
 		
 	// } catch (e) {
 	// 	console.error(__dirname, e);

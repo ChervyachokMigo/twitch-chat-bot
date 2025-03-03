@@ -28,11 +28,8 @@ const Gamemodes = ['osu', 'taiko', 'fruits', 'mania'];
 let beatmaps_md5_cache = null;
 
 const init_md5_cache = async () => {
-
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
-
     beatmaps_md5_cache = await beatmaps_md5.findAll({ raw: true });
-
 }
 
 const get_beatmap_id = async ({ md5 }) => {
@@ -43,6 +40,26 @@ const get_beatmap_id = async ({ md5 }) => {
         
         include: [{ model: beatmaps_md5, 
             where: { hash: md5 }
+        }],
+
+        
+        fieldMap: {
+            'beatmaps_md5.hash': 'md5',
+            'beatmaps_md5.id': 'md5_int',
+        },
+
+        raw: true, 
+    });
+}
+
+const get_beatmap_params_id = async ( id ) => {
+	const beatmap_params = select_mysql_model('beatmap_params');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
+    return await beatmap_params.findOne({
+        
+        include: [{ model: beatmaps_md5, 
+            where: { id: id }
         }],
 
         
@@ -109,6 +126,7 @@ const find_beatmap_pps = async (args) => {
 	const taiko_beatmap_pp = select_mysql_model('taiko_beatmap_pp');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 	const osu_beatmap_info = select_mysql_model('beatmap_info');
+	const beatmap_params = select_mysql_model('beatmap_params');
 
 	const osu_beatmaps_connection = get_connection(DB_BEATMAPS);
 	const { acc = 100, gamemode = 0, mods_int = 0, ranked = 4, pp_min = 0, pp_max = 0, aim = null, speed = null } = args;
@@ -214,6 +232,32 @@ const find_beatmap_pps = async (args) => {
 	}
 }
 
+const get_md5_list = async () => {
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
+    return await beatmaps_md5.findAll({
+        raw: true,
+    });
+}
+
+const get_all_beatmap_params = async () => {
+	const beatmap_params = select_mysql_model('beatmap_params');
+	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+
+    return await beatmap_params.findAll({
+        
+        include: [{ model: beatmaps_md5 }],
+
+        
+        fieldMap: {
+            'beatmaps_md5.hash': 'md5',
+            'beatmaps_md5.id': 'md5_int',
+        },
+
+        raw: true, 
+    });
+}
+
 const get_md5_id = async (hash, returning = true) => {
     if (typeof hash !== 'string' && hash.length !== 32){
         return null;
@@ -295,5 +339,7 @@ module.exports = {
     find_beatmap_pps,
     get_beatmap_id,
     GetGamemodeToInt,
-	
+	get_beatmap_params_id,
+	get_md5_list,
+	get_all_beatmap_params
 }

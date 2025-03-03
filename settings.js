@@ -15,7 +15,11 @@ module.exports = {
     calc_StartExecuting: 3,
     is_key_events: true,
 	
-    is_calc: false,
+    is_start_calculation: false,
     is_skip_check: true,
-	is_sound_notify: false
+	is_skip_update_beatmaps: false,
+	is_sound_notify: false,
+
+	update_channel_info_sec: 180,
+	update_channel_id: '478880338',
 }
