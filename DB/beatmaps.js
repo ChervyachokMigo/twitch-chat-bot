@@ -129,9 +129,24 @@ const find_beatmap_pps = async (args) => {
 	const beatmap_params = select_mysql_model('beatmap_params');
 
 	const osu_beatmaps_connection = get_connection(DB_BEATMAPS);
-	const { acc = 100, gamemode = 0, mods_int = 0, ranked = 4, pp_min = 0, pp_max = 0, aim = null, speed = null } = args;
+	const { 
+		acc = 100,
+		gamemode = 0, 
+		mods_int = 0, 
+		ranked = 4, 
+		pp_min = 0, 
+		pp_max = 0, 
+		aim = null, 
+		speed = null, 
+		bpm_min = 0, 
+		bpm_max = 1000,
+		stream_min = 0,
+		stream_max = 1000
+	} = args;
 	const mods = mods_int;
 	const accuracy = acc;
+	const stream_difficulty_min = stream_min;
+	const stream_difficulty_max = stream_max;
 
 	if (gamemode == Gamemode.osu) {
 
@@ -154,7 +169,7 @@ const find_beatmap_pps = async (args) => {
 			}
 		}
 
-		return await osu_beatmap_pp.findAll({
+		const results = await osu_beatmap_pp.findAll({
 			where: { 
 				accuracy, 
 				mods,
@@ -163,12 +178,23 @@ const find_beatmap_pps = async (args) => {
 					[Op.lte]: pp_max
 				},
 				...aim_condition,
-				...speed_condition
+				...speed_condition,
+
 			},
 
 			include: [beatmaps_md5, 
 				{ model: osu_beatmap_id, where: { gamemode, ranked } },
-				osu_beatmap_info
+				osu_beatmap_info,
+				{ model: beatmap_params, where: {
+					bpm_avg: {
+						[Op.gte]: bpm_min,
+						[Op.lte]: bpm_max
+					},
+					stream_difficulty: {
+						[Op.gte]: stream_difficulty_min,
+						[Op.lte]: stream_difficulty_max
+					}
+					}}
 			],
 
 			
@@ -188,10 +214,25 @@ const find_beatmap_pps = async (args) => {
 				'beatmap_info.title': 'title',
 				'beatmap_info.creator': 'creator',
 				'beatmap_info.difficulty': 'difficulty',
+
+				'beatmap_params.md5': 'md5_int',
+				'beatmap_params.bpm_min': 'bpm_min',
+				'beatmap_params.bpm_max': 'bpm_max',
+				'beatmap_params.bpm_avg': 'bpm_avg',
+				'beatmap_params.total_time': 'total_time',
+				'beatmap_params.drain_time': 'drain_time',
+				'beatmap_params.break_time': 'break_time',
+				'beatmap_params.hit_count': 'hit_count',
+				'beatmap_params.slider_count': 'slider_count',
+				'beatmap_params.spinner_count': 'spinner_count',
+				'beatmap_params.stream_difficulty': 'stream_difficulty',
 			},
 
 			raw: true, 
 		});
+
+		return results;
+
 	} else if (gamemode == Gamemode.taiko) {
 		return await taiko_beatmap_pp.findAll({
 			where: { 

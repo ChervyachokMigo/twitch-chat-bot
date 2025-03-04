@@ -51,7 +51,7 @@ const find = async (args) => {
 
 module.exports = {
     find,
-	buffer_size: ({ gamemode, username, acc = 100, pp_min, pp_max, aim, speed, mods_int }) => {
+	buffer_size: ({ gamemode, username, acc = 100, pp_min, pp_max, aim, speed, mods_int, bpm_min, bpm_max, stream_min, stream_max }) => {
 		let i = this.founded_buffer.findIndex( x => 
 		x.gamemode === gamemode &&
         x.username === username && 
@@ -60,7 +60,12 @@ module.exports = {
         x.pp_max === pp_max && 
         x.aim === aim &&
         x.speed === speed &&
-        x.mods_int === mods_int );
+        x.mods_int === mods_int &&
+		x.bpm_min === bpm_min &&
+		x.bpm_max === bpm_max &&
+        x.stream_min === stream_min &&
+        x.stream_max === stream_max
+		);
 	return this.founded_buffer[i].maps.length ?? 0;
 	}
 }

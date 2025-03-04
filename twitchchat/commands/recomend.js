@@ -71,7 +71,6 @@ const _this = module.exports = {
 				}
 			}
 
-			
 			let pp_min = Math.floor(pp - pp_diff * 0.5);
 			if (args.pp_min){
 				pp_min = parseInt(args.pp_min);
@@ -109,6 +108,35 @@ const _this = module.exports = {
 				mods_int = ModsToInt(args.mods.split('+'))
 			}
 
+			let bpm_min = 0;
+			let bpm_max = 1000;
+			let stream_min = 0;
+			let stream_max = 1000;
+			if (args.bpm_min){
+				bpm_min = parseInt(args.bpm_min);
+                if (isNaN(bpm_min) || bpm_min < 0) {
+                    bpm_min = 0;
+                }
+            }
+			if (args.bpm_max){
+				bpm_max = parseInt(args.bpm_max);
+                if (isNaN(bpm_max) || bpm_max < 0) {
+                    bpm_max = 1000;
+                }
+            }
+            if (args.stream_min){
+				stream_min = Number(args.stream_min);
+				if (isNaN(stream_min) || stream_min < 0) {
+                    stream_min = 0;
+                }
+			}
+			if (args.stream_max){
+				stream_max = Number(args.stream_max);
+                if (isNaN(stream_max) || stream_max > 1000) {
+                    stream_max = 1000;
+                }
+            }
+
 			let notify_chat = true;
 			if(typeof args.notify_chat === 'string' && args.notify_chat === 'false' || typeof args.notify_chat === 'number' && args.notify_chat === 0){
 				notify_chat = false;
@@ -120,14 +148,24 @@ const _this = module.exports = {
 				to_osu_user = args.osuname;
 			}
 			
-			const beatmap_params = { gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int };
+			const beatmap_params = { gamemode, username: tags.username, acc, pp_min, pp_max, aim, speed, mods_int, bpm_min, bpm_max, stream_min, stream_max };
 
 			for (let i = 0; i < n ; i++){
 				
 				const beatmap = await find(beatmap_params);
 
 				if (!beatmap){
-					return {error: '[recomend] > error no founded beatmap'}
+					//return {error: '[recomend] > error no founded beatmap'};
+					return {success: 'Больше нет карт'};
+				}
+
+				//отправить в твич чат
+				if (n === 1) {
+					if (notify_chat){
+						return {success: formatMap({ beatmap, founded_count: buffer_size(beatmap_params) + 1 })};
+					} else {
+						return {error: 'no notify chat'};
+					}
 				}
 
 				//отправить себе, если не указано кому
@@ -139,21 +177,14 @@ const _this = module.exports = {
 				}
 
 				if (to_osu_user) {
-					irc_say(to_osu_user, formatBeatmapInfoOsu({ username: tags.username, beatmap, n: i + 1 }) );
-				}
-
-				if (n === 1) {
-					if (notify_chat){
-						return {success: formatMap({ beatmap })};
-					} else {
-						return {error: 'no notify chat'};
-					}
+					irc_say(to_osu_user, formatBeatmapInfoOsu({ username: tags.username, beatmap, n: i + 1, founded_count: buffer_size(beatmap_params) + 1 }) );
 				}
 				
 			}
 
+			console.log(buffer_size(beatmap_params), 'beatmaps осталось');
+
 			if  (n > 1) {
-				console.log(buffer_size(beatmap_params), 'beatmaps осталось');
 				return {error: 'sended '+n+' maps'}
 			}
 
