@@ -53,12 +53,12 @@ module.exports = {
 			app.post('/recomend',async (req, res) => {
 				const request_data = req.body;
 
+				console.log('requested', request_data);
+
 				if (JSON.stringify(request_data) !== JSON.stringify(last_request_params)) {
                     last_request_params = request_data;
 					writeFileSync(last_request_params_path, JSON.stringify(request_data));
                 }
-				
-				//console.log('request recieved', request_data);
 
 				const result = await find_beatmap_pps(request_data);
 
@@ -72,7 +72,7 @@ module.exports = {
 				}
 			});
 
-			app.listen(3003, () => {
+			app.listen(3003, '0.0.0.0',  () => {
 				console.log(`http://localhost:3003`);
 				res(app);
 			});

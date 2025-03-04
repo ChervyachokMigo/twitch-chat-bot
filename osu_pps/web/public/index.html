@@ -3,10 +3,13 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<title>Osu recomendations</title>
-	<link href="styles.css" rel="stylesheet">
-	<script src="jquery-3.7.1.min.js"></script>
-	<link rel="icon" type="image/x-icon" href="favicon.png">
+
+	<link href="/styles.css" rel="stylesheet">
+	<script src="/jquery-3.7.1.min.js"></script>
+	<link href="/favicon.png" rel="icon" type="image/x-icon" >
+	
 </head>
 <body>
 	<script>
@@ -56,7 +59,7 @@
 
 		const post = async (action_name, request_args) => {
 			return new Promise ( (res ,rej) => 
-				fetch('http://localhost:3003/' + action_name, {
+				fetch('/' + action_name, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
@@ -149,13 +152,15 @@
 
             post('recomend', request)
                 .then(data => {
+					console.log('recieved data', data)
                     if (data.error) {
                         console.error(data.error);
                     } else {
+						
 						last_data = data;
 						sort('PP_DESC');
                     }
-                });    
+                }).catch( error => console.error(error));    
 
 			return false;
 		}
