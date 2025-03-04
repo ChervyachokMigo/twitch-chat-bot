@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const path = require('path');
+const { find_beatmap_pps } = require('../../DB/beatmaps');
 
 module.exports = {
 	init: async () => {
@@ -9,7 +10,7 @@ module.exports = {
 			const app = express();
 
 			app.get('/', (req, res) => {
-				res.send(path.join(__dirname, 'public', 'index.html'));
+				res.sendFile(path.join(__dirname, 'public', 'index.html'));
 			});
 
 			app.use(bodyParser.json());
@@ -17,12 +18,14 @@ module.exports = {
 
 			app.use(express.static( path.join(__dirname, 'public') ));
 			
-			app.post('/recomend',(req, res) => {
+			app.post('/recomend',async (req, res) => {
 				const request_data = req.body;
 				
-				//do somethinf
+				console.log('request recieved', request_data);
+				const result = await find_beatmap_pps(request_data);
 
-				res.send( true );
+				
+				res.send( result );
 			});
 
 			app.on('error', (e) => {

@@ -1,0 +1,151 @@
+body {
+	background-color: #2a2a2a; /* Темно-серый фон */
+	color: #e0e0e0; /* Светло-серый текст */
+	font-family: 'Arial', sans-serif;
+	margin: 0;
+	padding: 20px;
+}
+
+label {
+	color: #ff6f91; /* Розовый цвет для текста меток */
+    margin: auto 10px auto 0;
+	font-size: large;
+}
+
+select {
+	background-color: #3a3a3a;
+	border: 1px solid #ff6f91;
+	color: #e0e0e0;
+	padding: 6px 8px;
+    margin-top: 2px;
+    border-radius: 6px;
+    justify-items: center;
+	text-align: center;
+    width: 120px;
+}
+
+input[type="number"], input[type="text"] {
+	background-color: #3a3a3a;
+	border: 1px solid #ff6f91;
+	color: #e0e0e0;
+	padding: 6px 8px;
+    margin-top: 2px;
+    border-radius: 6px;
+    justify-items: center;
+	text-align: center;
+    width: 100px;
+}
+
+input[type="button"], button {
+	background-color: #ff6f91;
+	border: none;
+	color: #e0e0e0;
+	padding: 8px 20px;
+	cursor: pointer;
+	border-radius: 6px;
+}
+
+input[type="button"]:hover, button:hover {
+	background-color: #ff8fa3; /* Светло-розовый фон при наведении */
+}
+
+#output {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+#output div {
+	border-radius: 10px;
+	background-color: #3a3a3a; /* Темный фон для элементов вывода */
+	
+	display: flex
+;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.output_title {
+	color: #ff6f91;
+	padding-left: 10px;
+}
+
+.output_params {
+	color: #e0e0e0;
+	padding-left: 10px;
+}
+
+#output a {
+	text-decoration: none;
+	padding: 8px;
+}
+
+#output a:hover {
+	text-decoration: none;
+}
+
+#current_page {
+	color: #ff6f91; 
+	margin: 0 10px;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	text-align: center;
+	align-content: center;
+}
+
+.form_name {
+	color: #ff6f91; 
+	font-weight: bold;
+	font-size: x-large;
+	margin-top: 10px;
+}
+
+.form_input {
+	display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+	margin-top: 6px;
+}
+.sortation  {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+}
+
+.pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 20px;
+}
+
+.send_button {
+	margin-top: 10px;
+	justify-content: center;
+}
+
+.output_element a {
+	display: flex;
+	flex-direction: row;
+}
+
+.output_preview {
+	padding: 0;
+}
+
+.output_preview img {
+    width: 90px;
+    border-radius: 6px;
+}
+
+.output_error {
+	align-items: center;
+    padding: 8px;
+}

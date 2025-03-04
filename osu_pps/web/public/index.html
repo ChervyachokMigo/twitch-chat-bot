@@ -4,8 +4,251 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Osu recomendations</title>
+	<link href="styles.css" rel="stylesheet">
+
 </head>
 <body>
+	<script>
+		const mod_names = [
+			'NF', 'EZ',
+			'TD', 'HD', 'HR',
+			'SD', 'DT', 'RX',
+			'HT', 'NC',  'FL',
+			'AP', 'SO'
+		];
+
+		const ModsToInt = (mods) => {
+			let result = 0;
+
+			for ( let i = 0; i<mod_names.length; i++ ){
+				if (mods.indexOf(mod_names[i]) > -1){
+					result = result | 1 << i;
+				}
+			}
+
+			return result;
+		}
+
+		const parseNumber = (value, default_value) => {
+			const result = Number(value);
+			if (isNaN(result)) {
+				return default_value;
+			}
+			return result;
+		}
+
+		const post = async (action_name, request_args) => {
+			return new Promise ( (res ,rej) => 
+				fetch('http://localhost:3003/' + action_name, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(request_args)
+				}).then( response => response.json())
+				.then( data => res (data) )
+				.catch( error => {
+					console.error(error);
+					rej({ error });
+				})
+			);
+		}
+
+		let last_data = [];
+		const page_size = 10;
+		let current_page = 0;
+
+		const page_control = (val) => {
+			current_page += val;
+            if (current_page < 0) {
+                current_page = 0;
+            } else if (current_page * page_size > last_data.length) {
+                current_page = Math.floor(last_data.length / page_size);
+            }
+            render_beatmaps();
+		}
+
+		const format_time = (time_ms) => {
+			let seconds = Math.floor(time_ms / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            seconds %= 60;
+            minutes %= 60;
+            hours %= 60;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+		}
+
+		const render_beatmaps = () => {
+			document.getElementById('output').innerHTML = '';
+			document.getElementById('current_page').innerHTML = '0 стр.'
+			if (last_data.length == 0) {
+				document.getElementById('output').innerHTML = '<div class="output_element"><div class="output_error">No beatmaps found.</div></div>';
+                return;
+			}
+			document.getElementById('current_page').innerHTML = `${current_page + 1} из ${Math.ceil(last_data.length / page_size)} стр.`;
+			for (let i = 0; i < page_size; i++) {
+				if ((current_page * page_size) + i >= last_data.length) {
+                    break;
+                }
+				const beatmap = last_data[(current_page * page_size) + i];
+				document.getElementById('output').innerHTML += `<div class="output_element">
+					<a href="https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#osu/${beatmap.beatmap_id}">
+						<div>
+							<div class="output_preview">
+								<img src="https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/list.jpg"/>
+							</div>
+						</div>
+						<div>
+							<div class="output_title">
+								${beatmap.artist} - ${beatmap.title} [${beatmap.difficulty}] by ${beatmap.creator}
+							</div>
+							<div class="output_params">
+								<span class="output_pp">PP: ${beatmap.pp_total.toFixed(0)}</span>
+								<span class="output_BPM">🎵 ${beatmap.bpm_avg.toFixed(0)}</span>
+								<span class="output_stars">⭐ ${beatmap.stars.toFixed(2)}</span>
+								<span class="output_length">🕓 ${format_time(beatmap.total_time)}</span>
+								<span class="output_stream">Stream: ${beatmap.stream_difficulty.toFixed(2)}</span>
+							</div>
+						</div>
+					</a></div>`;
+			}
+		}
+
+		const send_request = () => {
+			const request = {
+				acc: parseNumber(document.getElementById('acc').value, 100),
+				pp_min: parseNumber(document.getElementById('pp_min').value, 300),
+				pp_max: parseNumber(document.getElementById('pp_max').value, 350),
+				gamemode: parseNumber(document.getElementById('gamemode').value, 0),
+				bpm_min: parseNumber(document.getElementById('bpm_min').value, 0),
+				bpm_max: parseNumber(document.getElementById('bpm_max').value, 1000),
+                stream_min: parseNumber(document.getElementById('stream_min').value, 0),
+				stream_max: parseNumber(document.getElementById('stream_max').value, 1000),
+				mods_int: ModsToInt(document.getElementById('mods_int').value),
+                
+			}
+
+			console.log(request);
+
+            post('recomend', request)
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                    } else {
+                        //console.log(data);// 
+						last_data = data;
+						sort('PP_DESC');
+                    }
+                });    
+
+			return false;
+		}
+
+		const sort = (el) => {
+			const value = el.value;
+			last_data = last_data.sort(
+				(a, b) => {
+                    switch (value) {
+                        case 'PP_DESC': return b.pp_total - a.pp_total;
+                        case 'PP_ASC': return a.pp_total - b.pp_total;
+                        case 'BPM_DESC': return b.bpm_avg - a.bpm_avg;
+                        case 'BPM_ASC': return a.bpm_avg - b.bpm_avg;
+                        case 'STARS_DESC': return b.stars - a.stars;
+                        case 'STARS_ASC': return a.stars - b.stars;
+						case 'LENGTH_DESC': return b.total_time - a.total_time;
+						case 'LENGTH_ASC': return a.total_time - b.total_time;
+                        case 'STREAM_DESC': return b.stream_difficulty - a.stream_difficulty;
+                        case 'STREAM_ASC': return a.stream_difficulty - b.stream_difficulty;
+                    }
+                }
+			);
+			current_page = 0;
+			render_beatmaps();
+		}
+	</script>
+	
+	<div class="sortation">
+		<label for="sort">Сортировка</label>
+		<select id="sort" onchange="sort(this)">
+			<option value="PP_DESC">PP убыв</option>
+            <option value="PP_ASC">PP возр</option>
+            <option value="BPM_DESC">🎵 BPM убыв</option>
+            <option value="BPM_ASC">🎵 BPM возр</option>
+			<option value="STARS_DESC">⭐ Stars убыв</option>
+			<option value="STARS_ASC">⭐ Stars возр</option>
+			<option value="LENGTH_DESC">🕓 Длина убыв</option>
+			<option value="LENGTH_ASC">🕓 Длина возр</option>
+			<option value="STREAM_DESC">Stream убыв</option>
+			<option value="STREAM_ASC">Stream возр</option>
+		</select>		
+	</div>
+
+	<div class="pagination">
+		<button onclick="page_control(-1)">Пред.</button>
+		<span id="current_page">0 стр.</span>
+		<button onclick="page_control(1)">След.</button>
+	</div>
+
+	<div id="output">
+	</div>
+
+	<div class="form">
+		<div class="form_name">🔍 Поиск по параметрам</div>
+
+		<div class="form_input">
+			<label for="gamemode">Режим</label>
+			<select id="gamemode">
+				<option value="0">Стандарт</option>
+				<option value="1">Тайко</option>
+				<option value="2">Мания</option>
+				<option value="3">Фрукты</option>
+			</select>
+		</div>
+
+		<div class="form_input">
+			<label for="acc">🎯 Точность</label>
+			<input type="number" id="acc" placeholder="accuracy" value="99" />
+		</div>
+
+		<div class="form_input">
+			<label for="pp_min">PP мин</label>
+			<input type="number" id="pp_min" placeholder="pp min" value="300" />
+		</div>
+
+		<div class="form_input">
+			<label for="pp_max">PP макс</label>
+			<input type="number" id="pp_max" placeholder="pp max" value="350" />
+		</div>
+
+		<div class="form_input">
+			<label for="bpm_min">🎵 BPM мин</label>
+			<input type="number" id="bpm_min" placeholder="bpm min" value="0" />
+		</div>
+
+		<div class="form_input">
+			<label for="bpm_max">🎵 BPM макс</label>
+			<input type="number" id="bpm_max" placeholder="bpm max" value="1000" />
+		</div>
+
+		<div class="form_input">
+			<label for="stream_min">Сложность стримов мин</label>
+			<input type="number" id="stream_min" placeholder="stream min" value="0" />
+		</div>
+
+		<div class="form_input">
+			<label for="stream_max">Сложность стримов макс</label>
+			<input type="number" id="stream_max" placeholder="stream max" value="1000" />
+		</div>
+
+		<div class="form_input">
+			<label for="mods_int">Моды</label>
+			<input type="text" id="mods_int" placeholder="mods" value="NM" />
+		</div>
+
+		<div class="form_input send_button">
+			<input type="button" onclick="send_request()" value="send"/>
+		</div>
+	</div>
 	
 </body>
 </html>
