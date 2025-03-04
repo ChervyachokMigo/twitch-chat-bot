@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --env-file=app.env index.js --inspect",
     "start_calc": "node --env-file=app.env calc_start.js --inspect",
-	"update_beatmap_params": "node --env-file=app.env update_beatmap_params.js --inspect"
+    "update_beatmap_params": "node --env-file=app.env update_beatmap_params.js --inspect"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +14,10 @@
   "dependencies": {
     "@sequelize/core": "^7.0.0-alpha.37",
     "axios": "^1.6.2",
+    "body-parser": "^1.20.3",
     "colors": "^1.4.0",
     "dashboard_framework": "github:ChervyachokMigo/dashboard_framework",
     "express": "^4.18.2",
-    "express-subdomain": "^1.0.5",
     "glob": "^10.3.10",
     "keypress": "^0.2.1",
     "md5-file": "^5.0.0",

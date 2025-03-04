@@ -15,6 +15,8 @@ const get_channel_info = require('./requests/get_channel_info.js');
 const bot_key_events = require('./twitchchat/tools/bot_key_events.js');
 const { update_channel_info_sec, update_channel_id } = require('./settings.js');
 
+const web = require('./osu_pps/web/api.js');
+
 let channel_info = {};
 
 const update_channel_info = async () => {
@@ -49,6 +51,8 @@ const main = async () => {
 		setInterval( async() => await update_channel_info(), update_channel_info_sec * 1000 );
 	
 		bot_key_events.init();
+
+		web.init();
 
 	} catch (e) {
 		console.error(__dirname, e);
