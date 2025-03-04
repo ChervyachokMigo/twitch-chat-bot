@@ -2,9 +2,37 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const path = require('path');
 const { find_beatmap_pps } = require('../../DB/beatmaps');
+const { check_folder } = require('osu-md5-storage-archive');
+const { writeFileSync, readFileSync, existsSync } = require('fs');
+
+const last_request_params_path = path.join(__dirname, '..', '..', 'data', 'osu_pps', 'last_request_params.json');
+
+let last_request_params = null;
 
 module.exports = {
 	init: async () => {
+
+		check_folder(path.dirname(last_request_params_path));
+
+		if (!last_request_params) {
+			if (existsSync(last_request_params_path)) {
+				last_request_params = JSON.parse(readFileSync(last_request_params_path, { encoding: 'utf8'}));
+			} else {
+				last_request_params = {
+					acc: 99,
+					pp_min: 300,
+					pp_max: 350,
+					gamemode: 0,
+					bpm_min: 0,
+					bpm_max: 1000,
+					stream_min: 0,
+					stream_max: 1000,
+					mods_int: 0,
+				}
+				writeFileSync(last_request_params_path, JSON.stringify(last_request_params));
+			}
+		}
+
 		return await new Promise( (res, rej) => {
 
 			const app = express();
@@ -18,13 +46,22 @@ module.exports = {
 
 			app.use(express.static( path.join(__dirname, 'public') ));
 			
+			app.post('/get_last_params',async (req, res) => {
+				res.send(last_request_params);
+			});
+
 			app.post('/recomend',async (req, res) => {
 				const request_data = req.body;
+
+				if (JSON.stringify(request_data) !== JSON.stringify(last_request_params)) {
+                    last_request_params = request_data;
+					writeFileSync(last_request_params_path, JSON.stringify(request_data));
+                }
 				
-				console.log('request recieved', request_data);
+				//console.log('request recieved', request_data);
+
 				const result = await find_beatmap_pps(request_data);
 
-				
 				res.send( result );
 			});
 

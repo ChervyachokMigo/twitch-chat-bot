@@ -5,7 +5,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Osu recomendations</title>
 	<link href="styles.css" rel="stylesheet">
-
+	<script src="jquery-3.7.1.min.js"></script>
+	<link rel="icon" type="image/x-icon" href="favicon.png">
 </head>
 <body>
 	<script>
@@ -16,6 +17,22 @@
 			'HT', 'NC',  'FL',
 			'AP', 'SO'
 		];
+
+		const IntToMods = (mods_int) => {
+			let result_mods = [];
+
+			if (mods_int === 0){
+				return ['NM'];
+			}
+
+			for ( let i = 0; i<mod_names.length; i++ ){
+				if (mods_int >> i & 1){
+					result_mods.push(mod_names[i]);
+				}
+			}
+			
+			return result_mods
+		}
 
 		const ModsToInt = (mods) => {
 			let result = 0;
@@ -135,7 +152,6 @@
                     if (data.error) {
                         console.error(data.error);
                     } else {
-                        //console.log(data);// 
 						last_data = data;
 						sort('PP_DESC');
                     }
@@ -165,6 +181,25 @@
 			current_page = 0;
 			render_beatmaps();
 		}
+
+		$( document ).ready( function() {
+			post('get_last_params')
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                    } else {
+						$('#gamemode').val(data.gamemode);
+						$('#acc').val(data.acc);
+						$('#pp_min').val(data.pp_min);
+						$('#pp_max').val(data.pp_max);
+						$('#bpm_min').val(data.bpm_min);
+						$('#bpm_max').val(data.bpm_max);
+						$('#stream_min').val(data.stream_min);
+						$('#stream_max').val(data.stream_max);
+						$('#mods_int').val(IntToMods(data.mods_int).join('+'));
+                    }
+                });
+		});
 	</script>
 	
 	<div class="sortation">
@@ -246,7 +281,7 @@
 		</div>
 
 		<div class="form_input send_button">
-			<input type="button" onclick="send_request()" value="send"/>
+			<input type="button" onclick="send_request()" value="Получить"/>
 		</div>
 	</div>
 	
