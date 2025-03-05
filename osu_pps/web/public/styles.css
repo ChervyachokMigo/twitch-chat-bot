@@ -131,7 +131,7 @@ input[type="button"]:hover, button:hover {
 	justify-content: center;
 }
 
-.output_element a {
+.output_element a,.output_element {
 	display: flex;
 	flex-direction: row;
 }

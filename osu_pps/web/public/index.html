@@ -6,9 +6,9 @@
 
 	<title>Osu recomendations</title>
 
-	<link href="/styles.css" rel="stylesheet">
-	<script src="/jquery-3.7.1.min.js"></script>
-	<link href="/favicon.png" rel="icon" type="image/x-icon" >
+	<link href="http://localhost:3003/styles.css" rel="stylesheet">
+	<script src="http://localhost:3003/jquery-3.7.1.min.js"></script>
+	<link href="http://localhost:3003/favicon.png" rel="icon" type="image/x-icon" >
 	
 </head>
 <body>
@@ -59,7 +59,7 @@
 
 		const post = async (action_name, request_args) => {
 			return new Promise ( (res ,rej) => 
-				fetch('/' + action_name, {
+				fetch('http://localhost:3003/' + action_name, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
@@ -98,6 +98,17 @@
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 		}
 
+		const send_beatmap = (idx) => {
+			post('send_beatmap_to_osu', { beatmap: last_data[idx], user: 'SadGod'})
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                    } else {
+						console.log(data)
+                    }
+                });
+		}
+
 		const render_beatmaps = () => {
 			document.getElementById('output').innerHTML = '';
 			document.getElementById('current_page').innerHTML = '0 стр.'
@@ -107,10 +118,12 @@
 			}
 			document.getElementById('current_page').innerHTML = `${current_page + 1} из ${Math.ceil(last_data.length / page_size)} стр.`;
 			for (let i = 0; i < page_size; i++) {
-				if ((current_page * page_size) + i >= last_data.length) {
+				const idx = (current_page * page_size) + i;
+				if (idx >= last_data.length) {
                     break;
                 }
-				const beatmap = last_data[(current_page * page_size) + i];
+				const beatmap = last_data[idx];
+
 				document.getElementById('output').innerHTML += `<div class="output_element">
 					<a href="https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#osu/${beatmap.beatmap_id}">
 						<div>
@@ -128,11 +141,17 @@
 								<span class="output_stars">⭐ ${beatmap.stars.toFixed(2)}</span>
 								<span class="output_length">🕓 ${format_time(beatmap.total_time)}</span>
 								<span class="output_stream">Stream: ${beatmap.stream_difficulty.toFixed(2)}</span>
+								<span class="output_stream">Circles: ${beatmap.circles_percent.toFixed(2)}</span>
 							</div>
 						</div>
-					</a></div>`;
+					</a>
+					<div>
+						<input type="button" onclick="send_beatmap(${idx});" value="Отправить">
+					</div>
+					
+					</div>`;
 			}
-		}
+		}//https://b.ppy.sh/preview/1849738.mp3
 
 		const send_request = () => {
 			const request = {
@@ -158,6 +177,9 @@
                     } else {
 						
 						last_data = data;
+
+						last_data = last_data.map( v => ({...v, circles_percent: v.hit_count / v.slider_count }));
+
 						sort('PP_DESC');
                     }
                 }).catch( error => console.error(error));    
@@ -180,6 +202,8 @@
 						case 'LENGTH_ASC': return a.total_time - b.total_time;
                         case 'STREAM_DESC': return b.stream_difficulty - a.stream_difficulty;
                         case 'STREAM_ASC': return a.stream_difficulty - b.stream_difficulty;
+						case 'CIRCLES_ASC': return a.circles_percent - b.circles_percent;
+						case 'CIRCLES_DESC': return b.circles_percent - a.circles_percent;
                     }
                 }
 			);
@@ -220,6 +244,8 @@
 			<option value="LENGTH_ASC">🕓 Длина возр</option>
 			<option value="STREAM_DESC">Stream убыв</option>
 			<option value="STREAM_ASC">Stream возр</option>
+			<option value="CIRCLES_DESC">Круги убыв</option>
+			<option value="CIRCLES_ASC">Круги возр</option>
 		</select>		
 	</div>
 

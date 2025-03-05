@@ -8,6 +8,17 @@ const { writeFileSync, readFileSync, existsSync } = require('fs');
 const last_request_params_path = path.join(__dirname, '..', '..', 'data', 'osu_pps', 'last_request_params.json');
 
 let last_request_params = null;
+const request_params_default = {
+	acc: 99,
+	pp_min: 300,
+	pp_max: 350,
+	gamemode: 0,
+	bpm_min: 0,
+	bpm_max: 1000,
+	stream_min: 0,
+	stream_max: 1000,
+	mods_int: 0,
+};
 
 module.exports = {
 	init: async () => {
@@ -18,17 +29,7 @@ module.exports = {
 			if (existsSync(last_request_params_path)) {
 				last_request_params = JSON.parse(readFileSync(last_request_params_path, { encoding: 'utf8'}));
 			} else {
-				last_request_params = {
-					acc: 99,
-					pp_min: 300,
-					pp_max: 350,
-					gamemode: 0,
-					bpm_min: 0,
-					bpm_max: 1000,
-					stream_min: 0,
-					stream_max: 1000,
-					mods_int: 0,
-				}
+				last_request_params = request_params_default;
 				writeFileSync(last_request_params_path, JSON.stringify(last_request_params));
 			}
 		}
@@ -50,10 +51,23 @@ module.exports = {
 				res.send(last_request_params);
 			});
 
+			app.post('/send_beatmap_to_osu',async (req, res) => {
+				const request_data = req.body;
+				
+				console.log('requested', request_data);
+
+				res.send({ result: 'beatmap sended' });
+			});
+
 			app.post('/recomend',async (req, res) => {
 				const request_data = req.body;
 
-				console.log('requested', request_data);
+				//console.log('requested', request_data);
+
+				//is not empty object check
+				if (Object.keys(request_data).length === 0) {
+                    return res.status(400).send('Request data is empty');
+                }
 
 				if (JSON.stringify(request_data) !== JSON.stringify(last_request_params)) {
                     last_request_params = request_data;

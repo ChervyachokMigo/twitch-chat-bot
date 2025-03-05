@@ -1,7 +1,7 @@
 const storage = require("osu-md5-storage-archive");
 const fs = require("fs");
 
-const { init_md5_cache, get_md5_list, get_all_beatmap_params, get_md5_id } = require("./beatmaps");
+const { init_md5_cache, get_all_beatmap_params, get_md5_id } = require("./beatmaps");
 const { parse_osu_file, osu_file_beatmap_property, beatmap_data_hit_object_type } = require("osu-tools");
 const { MYSQL_SAVE } = require("mysql-tools");
 const { beatmaps_cache } = require("../settings");
@@ -14,6 +14,10 @@ const props = [
 	osu_file_beatmap_property.break_time,
 	osu_file_beatmap_property.bpm,
 	osu_file_beatmap_property.stream_difficulty,
+	osu_file_beatmap_property.circles_time,
+	osu_file_beatmap_property.sliders_time,
+    osu_file_beatmap_property.circles_count,
+    osu_file_beatmap_property.sliders_count,
 ];
 
 const max_int32 = Math.abs(Math.pow(2, 31) - 1);
@@ -87,9 +91,11 @@ module.exports = {
 				total_time: Math.trunc(beatmap_data.general.total_time),
 				drain_time: Math.trunc(beatmap_data.general.drain_time),
 				break_time: Math.trunc(beatmap_data.general.break_time),
+				circles_time: Math.trunc(beatmap_data.general.circles_time),
+                sliders_time: Math.trunc(beatmap_data.general.sliders_time),
 
-				hit_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.hitcircle) || []).length,
-				slider_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.slider) || []).length,
+				hit_count: Math.trunc(beatmap_data.hit_objects.circles_count),
+				slider_count: Math.trunc(beatmap_data.hit_objects.sliders_count),
 				spinner_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.spinner) || []).length,
 
 				stream_difficulty: beatmap_data.difficulty.stream_difficulty > max_int32 ? max_int32 : beatmap_data.difficulty.stream_difficulty,
@@ -98,8 +104,15 @@ module.exports = {
 			mysql_save_data.push(mysql_data);
 
 			if (mysql_save_data.length >= 100) {
+				try{
 				await MYSQL_SAVE('beatmap_params', mysql_save_data, true);
 				mysql_save_data = [];
+				} catch(e){
+                    console.log('Error saving beatmap_params', e);
+					console.log(beatmap_data)
+					console.log(mysql_save_data)
+					process.exit(1);
+                }
 			}
 
 		} // end for
