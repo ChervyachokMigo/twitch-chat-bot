@@ -85,10 +85,8 @@ module.exports = {
 			});
 
 			app.post('/find_beatmap', async (req, res) => {
-				const request_data = req.body;
-				const beatmap_url = request_data.beatmap_url;
-				
-				const url_parts = beatmap_url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
+				let request_data = req.body;
+				const url_parts = request_data.beatmap_url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
 		
 				if (url_parts === null) {
 					const error = {error: `ссылка - не битмапсет`};
@@ -96,13 +94,13 @@ module.exports = {
 					return;
 				}
 
-				const beatmap = {
+				request_data = {...request_data,
 					beatmapset_id: url_parts[1]? Number(url_parts[1]): null,
 					gamemode: url_parts[3]? GetGamemodeToInt(url_parts[3]): null,
 					beatmap_id: url_parts[4]? Number(url_parts[4]): null
 				};
 
-				const result = await find_beatmap_pps(beatmap);
+				const result = await find_beatmap_pps(request_data);
 
 				res.send( result );
 			});

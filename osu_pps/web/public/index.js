@@ -217,7 +217,8 @@ const sort = (el) => {
 
 const find_beatmap = () => {
 	const beatmap_url = document.getElementById('beatmap_url').value;
-    post('find_beatmap', { beatmap_url })
+	const mods_int =  ModsToInt(document.getElementById('mods_int').value);
+    post('find_beatmap', { beatmap_url, mods_int })
         .then(data => {
             if (data.error) {
                 console.error(data.error);
