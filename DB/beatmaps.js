@@ -130,19 +130,23 @@ const find_beatmap_pps = async (args) => {
 
 	const osu_beatmaps_connection = get_connection(DB_BEATMAPS);
 	const { 
-		acc = 100,
+		acc = 99,
 		gamemode = 0, 
 		mods_int = 0, 
 		ranked = 4, 
 		pp_min = 0, 
-		pp_max = 0, 
+		pp_max = 10000, 
 		aim = null, 
 		speed = null, 
 		bpm_min = 0, 
 		bpm_max = 1000,
 		stream_min = 0,
-		stream_max = 1000
+		stream_max = 1000,
+		beatmap_id = null,
+		beatmapset_id = null,
 	} = args;
+
+
 	const mods = mods_int;
 	const accuracy = acc;
 	const stream_difficulty_min = stream_min;
@@ -169,6 +173,18 @@ const find_beatmap_pps = async (args) => {
 			}
 		}
 
+		let beatmap_condition = {
+			gamemode, ranked
+		};
+
+		if (beatmap_id && beatmapset_id) {
+			beatmap_condition = {
+				...beatmap_condition,
+				beatmap_id,
+                beatmapset_id,
+			}
+		}
+
 		const results = await osu_beatmap_pp.findAll({
 			where: { 
 				accuracy, 
@@ -183,7 +199,7 @@ const find_beatmap_pps = async (args) => {
 			},
 
 			include: [beatmaps_md5, 
-				{ model: osu_beatmap_id, where: { gamemode, ranked } },
+				{ model: osu_beatmap_id, where: beatmap_condition },
 				osu_beatmap_info,
 				{ model: beatmap_params, where: {
 					bpm_avg: {

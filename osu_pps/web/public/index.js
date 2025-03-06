@@ -150,7 +150,6 @@ const render_beatmaps = () => {
 		output_html += '</div>';
 
 		if (i > 0 && i % 2 == 1) {
-			console.log(i)
 			output_html += `</div>`;
 		}
 
@@ -159,6 +158,12 @@ const render_beatmaps = () => {
 	document.getElementById('output').innerHTML = output_html;
 
 }//https://b.ppy.sh/preview/1849738.mp3
+
+const set_last_data = (data) => {
+	current_page = 0;
+	last_data = data;
+	last_data = last_data.map( v => ({...v, circles_percent: v.hit_count / (v.hit_count + v.slider_count) }));
+}
 
 const send_request = () => {
 	const request = {
@@ -176,15 +181,10 @@ const send_request = () => {
 
 	post('recomend', request)
 		.then(data => {
-			console.log('recieved data', data)
 			if (data.error) {
 				console.error(data.error);
 			} else {
-				
-				last_data = data;
-
-				last_data = last_data.map( v => ({...v, circles_percent: v.hit_count / (v.hit_count + v.slider_count) }));
-
+				set_last_data(data);
 				sort(document.getElementById('sort'));
 			}
 		}).catch( error => console.error(error));    
@@ -212,8 +212,22 @@ const sort = (el) => {
 			}
 		}
 	);
-	current_page = 0;
 	render_beatmaps();
+}
+
+const find_beatmap = () => {
+	const beatmap_url = document.getElementById('beatmap_url').value;
+    post('find_beatmap', { beatmap_url })
+        .then(data => {
+            if (data.error) {
+                console.error(data.error);
+            } else {
+                set_last_data(data);
+                render_beatmaps();
+            }
+        }).catch(error => console.error(error));    
+
+    return false;
 }
 
 $( document ).ready( function() {

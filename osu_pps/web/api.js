@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const { writeFileSync, readFileSync, existsSync } = require('fs');
 const { check_folder, log } = require('osu-md5-storage-archive');
-const { find_beatmap_pps } = require('../../DB/beatmaps');
+const { find_beatmap_pps, GetGamemodeToInt } = require('../../DB/beatmaps');
 const { irc_say } = require('../../twitchchat/tools/ircManager');
 const { formatBeatmapInfoOsu } = require('../../twitchchat/tools/format_beatmap');
 const { v2 } = require('osu-api-extended');
@@ -59,25 +59,10 @@ module.exports = {
 
 			app.post('/send_beatmap_to_osu',async (req, res) => {
 				const request_data = req.body;
-				
-				//console.log('requested', request_data);
 
 				const message_text = formatBeatmapInfoOsu({ username: 'localhost', beatmap: request_data.beatmap });
-				console.log(message_text)
-				irc_say(request_data.user, message_text);
-				
-				// if (!await checkTokenExpires('osu')){
-				// 	log('cant get osu token');
-				// 	return false;
-				// };
 
-				// v2.chat.actions({
-				// 	type: 'send_pm',
-				// 	is_action: false,
-				// 	user_id: 9547517,
-				// 	message: message_text
-				// }).then( res => console.log('result', res))
-				// .catch( err => console.error('error:', err));
+				irc_say(request_data.user, message_text);
 
 				res.send({ result: 'beatmap sended' });
 			});
@@ -85,9 +70,6 @@ module.exports = {
 			app.post('/recomend',async (req, res) => {
 				const request_data = req.body;
 
-				//console.log('requested', request_data);
-
-				//is not empty object check
 				if (Object.keys(request_data).length === 0) {
                     return res.status(400).send('Request data is empty');
                 }
@@ -98,6 +80,29 @@ module.exports = {
                 }
 
 				const result = await find_beatmap_pps(request_data);
+
+				res.send( result );
+			});
+
+			app.post('/find_beatmap', async (req, res) => {
+				const request_data = req.body;
+				const beatmap_url = request_data.beatmap_url;
+				
+				const url_parts = beatmap_url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
+		
+				if (url_parts === null) {
+					const error = {error: `ссылка - не битмапсет`};
+					res.send( error );
+					return;
+				}
+
+				const beatmap = {
+					beatmapset_id: url_parts[1]? Number(url_parts[1]): null,
+					gamemode: url_parts[3]? GetGamemodeToInt(url_parts[3]): null,
+					beatmap_id: url_parts[4]? Number(url_parts[4]): null
+				};
+
+				const result = await find_beatmap_pps(beatmap);
 
 				res.send( result );
 			});
