@@ -83,6 +83,16 @@ module.exports = {
         return arr.filter(onlyUnique)
     },
 
+	format_time: (time_ms) => {
+		let seconds = Math.floor(time_ms / 1000);
+		let minutes = Math.floor(seconds / 60);
+		let hours = Math.floor(minutes / 60);
+		seconds %= 60;
+		minutes %= 60;
+		hours %= 60;
+		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+	}
+
 }
 
 function onlyUnique(value, index, self) {

@@ -56,7 +56,7 @@ module.exports = {
 
 		if (typeof twitch_token.value === 'undefined'){
 			if ( existsSync(twitch_token_path) ){
-				console.log('Использование старого твич токена');
+				console.log('Использование старого Twitch токена');
 				twitch_token = JSON.parse( readFileSync(twitch_token_path, { encoding: 'utf8' }));
 			} else {
 				if ((await initTwitch()) === false ) {

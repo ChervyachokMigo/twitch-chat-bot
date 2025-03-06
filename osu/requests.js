@@ -2,9 +2,28 @@ const { auth } = require ('osu-api-extended');
 
 const log = require('../tools/log');
 const { MYSQL_GET_ONE, MYSQL_SAVE } = require('mysql-tools');
+const { OSU_LOGIN, OSU_PASSWORD } = require('../config');
+const { authorize } = require('osu-api-extended/dist/utility/auth');
 
 let tokens = {
     osu: {}
+}
+
+async function relogin_osu(){
+	log('Получение Осу токена');   
+	var token = await auth.login({ type: 'lazer', login: OSU_LOGIN,  password: OSU_PASSWORD });
+	log('Установлен новый Осу токен'); 
+	tokens.osu = {
+		value: token.access_token,
+		type: 'oauth',
+		getdate: Math.trunc(new Date().valueOf()/1000),
+		expires: token.expires_in
+	};
+	await MYSQL_SAVE('token', {
+		platform: 'osu',
+		...tokens.osu
+	});
+	return token && token.access_token && token.expires_in?true:false;
 }
 
 async function initOsu(){     
@@ -29,23 +48,6 @@ async function initOsu(){
     } else {
         return await relogin_osu();
     }
-
-    async function relogin_osu(){
-        log('Получение Осу токена');        
-        var token = await auth.login_lazer(OSU_LOGIN, OSU_PASSWORD);
-        log('Установлен новый Осу токен'); 
-        tokens.osu = {
-            value: token.access_token,
-            type: 'oauth',
-            getdate: Math.trunc(new Date().valueOf()/1000),
-            expires: token.expires_in
-        };
-        await MYSQL_SAVE('token', {
-			platform: 'osu',
-			...tokens.osu
-		});
-        return token && token.access_token && token.expires_in?true:false;
-    }
 }
 
 
@@ -53,6 +55,7 @@ async function checkTokenExpires(platform){
     var endtime = 0;
     switch(platform){
         case 'osu': 
+
             if (typeof tokens.osu.value === 'undefined'){
                 if (await initOsu() == false){
                     log('osu token failed', 'osu token')
@@ -77,5 +80,5 @@ async function checkTokenExpires(platform){
 
 module.exports = {
     checkTokenExpires,
-
+	relogin_osu
 }

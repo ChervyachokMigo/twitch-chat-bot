@@ -53,18 +53,9 @@ input[type="button"]:hover, button:hover {
 	margin-top: 20px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	align-items: center;
 }
 
-#output div {
-	border-radius: 10px;
-	background-color: #3a3a3a; /* Темный фон для элементов вывода */
-	
-	display: flex
-;
-    flex-direction: column;
-    justify-content: center;
-}
 
 .output_title {
 	color: #ff6f91;
@@ -74,6 +65,9 @@ input[type="button"]:hover, button:hover {
 .output_params {
 	color: #e0e0e0;
 	padding-left: 10px;
+	display: flex;
+	justify-content: space-evenly;
+    align-items: flex-end;
 }
 
 #output a {
@@ -136,6 +130,17 @@ input[type="button"]:hover, button:hover {
 	flex-direction: row;
 }
 
+
+.output_element {
+	border-radius: 10px;
+	background-color: #3a3a3a; /* Темный фон для элементов вывода */
+	display: flex;
+    flex-direction: column;
+    justify-content: center;
+	margin: 5px;
+	width: -webkit-fill-available;
+}
+
 .output_preview {
 	padding: 0;
 }
@@ -148,4 +153,15 @@ input[type="button"]:hover, button:hover {
 .output_error {
 	align-items: center;
     padding: 8px;
+}
+
+.output_pair {
+	display: flex;
+    flex-direction: row;
+	max-width: 1000px;
+}
+
+.output_control {
+	display: flex;
+    flex-direction: row-reverse;
 }

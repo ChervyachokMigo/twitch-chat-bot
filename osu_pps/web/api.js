@@ -1,13 +1,16 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const path = require('path');
-const { find_beatmap_pps } = require('../../DB/beatmaps');
-const { check_folder } = require('osu-md5-storage-archive');
 const { writeFileSync, readFileSync, existsSync } = require('fs');
+const { check_folder, log } = require('osu-md5-storage-archive');
+const { find_beatmap_pps } = require('../../DB/beatmaps');
+const { irc_say } = require('../../twitchchat/tools/ircManager');
+const { formatBeatmapInfoOsu } = require('../../twitchchat/tools/format_beatmap');
+const { v2 } = require('osu-api-extended');
+const { checkTokenExpires } = require('../../osu/requests');
 
 const last_request_params_path = path.join(__dirname, '..', '..', 'data', 'osu_pps', 'last_request_params.json');
 
-let last_request_params = null;
 const request_params_default = {
 	acc: 99,
 	pp_min: 300,
@@ -18,7 +21,10 @@ const request_params_default = {
 	stream_min: 0,
 	stream_max: 1000,
 	mods_int: 0,
+	osuname: 'BanchoBot',
 };
+
+let last_request_params = null;
 
 module.exports = {
 	init: async () => {
@@ -54,7 +60,24 @@ module.exports = {
 			app.post('/send_beatmap_to_osu',async (req, res) => {
 				const request_data = req.body;
 				
-				console.log('requested', request_data);
+				//console.log('requested', request_data);
+
+				const message_text = formatBeatmapInfoOsu({ username: 'localhost', beatmap: request_data.beatmap });
+				console.log(message_text)
+				irc_say(request_data.user, message_text);
+				
+				// if (!await checkTokenExpires('osu')){
+				// 	log('cant get osu token');
+				// 	return false;
+				// };
+
+				// v2.chat.actions({
+				// 	type: 'send_pm',
+				// 	is_action: false,
+				// 	user_id: 9547517,
+				// 	message: message_text
+				// }).then( res => console.log('result', res))
+				// .catch( err => console.error('error:', err));
 
 				res.send({ result: 'beatmap sended' });
 			});

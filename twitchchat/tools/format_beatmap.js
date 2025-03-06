@@ -1,5 +1,6 @@
 const { Gamemodes } = require("../../DB/beatmaps");
 const { IntToMods } = require("../../osu_pps/osu_mods");
+const { format_time } = require("../../tools/tools");
 
 module.exports = {
 	formatMap: ({ beatmap, short = false, founded_count }) => {
@@ -32,18 +33,22 @@ module.exports = {
 
 	},
 
-	formatBeatmapInfoOsu: ({ username, beatmap, n }) => {
+	formatBeatmapInfoOsu: ({ username, beatmap }) => {
 		const res = [];
 
 		const url = `https://osu.ppy.sh/beatmapsets/${beatmap.beatmapset_id}#${Gamemodes[beatmap.gamemode]}/${beatmap.beatmap_id}`;
 		const title = `${beatmap.artist} - ${beatmap.title}`;
-
-		res.push(`[${Gamemodes[beatmap.gamemode]}, ${n}] ${username} > [${url} ${title}]`);
+		//${username} >
+		res.push(`[${url} ${title}]`);
 		res.push(IntToMods(beatmap.mods).join('+'));
+		res.push(`${beatmap.stars.toFixed(1)} ★`);
 		res.push(`${beatmap.accuracy}%`);
-		res.push(`${beatmap.pp_total}pp`);
-
-		if (beatmap.stars) res.push(`${beatmap.stars.toFixed(1)} ★`);
+		res.push(`${beatmap.pp_total} pp`);
+		res.push(`${beatmap.bpm_avg} bpm`);
+		res.push(`${format_time(beatmap.total_time)}`);
+		res.push(`${beatmap.hit_count} circles`);
+		res.push(`${beatmap.slider_count} sliders`);
+		res.push(`${beatmap.stream_difficulty.toFixed(2)} stream`);
 
 		return res.join(' | ');
 	}

@@ -157,7 +157,7 @@ module.exports = {
             return false;
         };
     
-        var data = await v2.user.details(userid, mode);
+        var data = await v2.users.details({ user: userid, mode }) ;
         if (data.error === null){
             return data;
         }

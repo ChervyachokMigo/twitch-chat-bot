@@ -29,6 +29,7 @@ const update_channel_info = async () => {
 
 const main = async () => {
     process.title = 'twitch_chat_bot';
+
     try {
 
 		await prepareDB();
