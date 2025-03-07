@@ -41,7 +41,18 @@
 	<div id="output">
 	</div>
 
+	<div class="form_input show_button">
+		<input type="button" onclick="toggle_form()" value=".."/>
+	</div>
+
+	<div class="form_outside">
+
 	<div class="form">
+		
+		<div class="form_input hide_button">
+			<input type="button" onclick="toggle_form()" value="X"/>
+		</div>
+
 		<div class="form_name">🔍 Поиск по параметрам</div>
 
 		<div class="form_input">
@@ -110,9 +121,11 @@
 			<input type="text" id="beatmap_url" placeholder="beatmap_url" />
 		</div>
 
-		<div class="form_input">
+		<div class="form_input find_button">
 			<input type="button" onclick="find_beatmap()" value="Найти"/>
 		</div>
+
+	</div>
 	</div>
 	
 </body>

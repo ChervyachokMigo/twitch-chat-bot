@@ -231,7 +231,19 @@ const find_beatmap = () => {
     return false;
 }
 
+const toggle_form = () => {
+	if ($('.form_outside').css('display') === 'none') {
+		$('.form_outside').show();
+        $('.show_button').hide();
+	} else {
+		$('.form_outside').hide();
+		$('.show_button').show();
+	}
+}
+
 $( document ).ready( function() {
+	$('.form_outside').hide();
+	$('.show_button').show();
 	post('get_last_params')
 		.then(data => {
 			if (data.error) {
