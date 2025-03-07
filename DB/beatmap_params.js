@@ -18,6 +18,7 @@ const props = [
 	osu_file_beatmap_property.sliders_time,
     osu_file_beatmap_property.circles_count,
     osu_file_beatmap_property.sliders_count,
+	osu_file_beatmap_property.objects_time
 ];
 
 const max_int32 = Math.abs(Math.pow(2, 31) - 1);
@@ -44,6 +45,10 @@ module.exports = {
 
 		for (let md5 of filelist) {
 			i++;
+
+			if (i < 256928) {
+				continue;
+			}
 
 			if (i % part_size === 0) {
 				console.log('processed:', i, '/', filelist.size); 
@@ -88,14 +93,14 @@ module.exports = {
 				bpm_min: Math.trunc(beatmap_data.general.bpm.min),
 				bpm_max: beatmap_data.general.bpm.max > max_int32 ? max_int32 : Math.trunc(beatmap_data.general.bpm.max),
 				bpm_avg: beatmap_data.general.bpm.avg > max_int32 ? max_int32 : Math.trunc(beatmap_data.general.bpm.avg),
-				total_time: Math.trunc(beatmap_data.general.total_time),
-				drain_time: Math.trunc(beatmap_data.general.drain_time),
-				break_time: Math.trunc(beatmap_data.general.break_time),
-				circles_time: Math.trunc(beatmap_data.general.circles_time),
-                sliders_time: Math.trunc(beatmap_data.general.sliders_time),
-
-				hit_count: Math.trunc(beatmap_data.hit_objects.circles_count),
-				slider_count: Math.trunc(beatmap_data.hit_objects.sliders_count),
+				total_time: Math.round(beatmap_data.general.total_time),
+				drain_time: Math.round(beatmap_data.general.drain_time),
+				break_time: Math.round(beatmap_data.general.break_time),
+				circles_time: Math.round(beatmap_data.general.circles_time),
+                sliders_time: Math.round(beatmap_data.general.sliders_time),
+				objects_time: beatmap_data.general.objects_time? Math.round(beatmap_data.general.objects_time): 0,
+				hit_count: beatmap_data.hit_objects.circles_count,
+				slider_count: beatmap_data.hit_objects.sliders_count,
 				spinner_count: (beatmap_data.hit_objects.hit_objects.filter(v => v.type === beatmap_data_hit_object_type.spinner) || []).length,
 
 				stream_difficulty: beatmap_data.difficulty.stream_difficulty > max_int32 ? max_int32 : beatmap_data.difficulty.stream_difficulty,
@@ -109,7 +114,7 @@ module.exports = {
 				mysql_save_data = [];
 				} catch(e){
                     console.log('Error saving beatmap_params', e);
-					console.log(beatmap_data)
+					//console.log(beatmap_data)
 					console.log(mysql_save_data)
 					process.exit(1);
                 }
