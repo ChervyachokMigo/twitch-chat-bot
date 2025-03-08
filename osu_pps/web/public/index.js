@@ -42,6 +42,20 @@ const parseNumber = (value, default_value) => {
 	return result;
 }
 
+const hide_form = () => {
+	$('.form_outside').hide();
+	$('.show_button').show();
+}
+
+const toggle_form = () => {
+	if ($('.form_outside').css('display') === 'none') {
+		$('.form_outside').show();
+        $('.show_button').hide();
+	} else {
+		hide_form();
+	}
+}
+
 const post = async (action_name, request_args) => {
 	return new Promise ( (res ,rej) => 
 		fetch('http://localhost:3003/' + action_name, {
@@ -187,8 +201,10 @@ const send_request = () => {
 				set_last_data(data);
 				sort(document.getElementById('sort'));
 			}
-		}).catch( error => console.error(error));    
+		}).catch( error => console.error(error));   
 
+	hide_form();
+	
 	return false;
 }
 
@@ -228,22 +244,15 @@ const find_beatmap = () => {
             }
         }).catch(error => console.error(error));    
 
+	hide_form();
+
     return false;
 }
 
-const toggle_form = () => {
-	if ($('.form_outside').css('display') === 'none') {
-		$('.form_outside').show();
-        $('.show_button').hide();
-	} else {
-		$('.form_outside').hide();
-		$('.show_button').show();
-	}
-}
 
 $( document ).ready( function() {
-	$('.form_outside').hide();
-	$('.show_button').show();
+	hide_form();
+
 	post('get_last_params')
 		.then(data => {
 			if (data.error) {
