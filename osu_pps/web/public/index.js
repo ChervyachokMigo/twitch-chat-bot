@@ -176,10 +176,16 @@ const render_beatmaps = () => {
 const set_last_data = (data) => {
 	current_page = 0;
 	last_data = data;
+	console.log(last_data)
 	last_data = last_data.map( v => ({...v, circles_percent: v.hit_count / (v.hit_count + v.slider_count) }));
 }
 
 const send_request = () => {
+
+	set_last_data([]);
+	render_beatmaps();
+	hide_form();
+
 	const request = {
 		acc: parseNumber(document.getElementById('acc').value, 100),
 		pp_min: parseNumber(document.getElementById('pp_min').value, 300),
@@ -202,8 +208,6 @@ const send_request = () => {
 				sort(document.getElementById('sort'));
 			}
 		}).catch( error => console.error(error));   
-
-	hide_form();
 	
 	return false;
 }
@@ -234,6 +238,11 @@ const sort = (el) => {
 const find_beatmap = () => {
 	const beatmap_url = document.getElementById('beatmap_url').value;
 	const mods_int =  ModsToInt(document.getElementById('mods_int').value);
+
+	set_last_data([]);
+	render_beatmaps();
+	hide_form();
+
     post('find_beatmap', { beatmap_url, mods_int })
         .then(data => {
             if (data.error) {
@@ -243,8 +252,6 @@ const find_beatmap = () => {
                 render_beatmaps();
             }
         }).catch(error => console.error(error));    
-
-	hide_form();
 
     return false;
 }

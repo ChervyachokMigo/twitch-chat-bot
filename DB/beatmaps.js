@@ -242,6 +242,10 @@ const find_beatmap_pps = async (args) => {
 				'beatmap_params.slider_count': 'slider_count',
 				'beatmap_params.spinner_count': 'spinner_count',
 				'beatmap_params.stream_difficulty': 'stream_difficulty',
+				'beatmap_params.circles_time': 'circles_time',
+				'beatmap_params.sliders_time': 'sliders_time',
+				'beatmap_params.objects_time': 'objects_time',
+
 			},
 
 			raw: true, 
