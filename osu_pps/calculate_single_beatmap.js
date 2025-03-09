@@ -4,17 +4,14 @@ const { GetGamemodeToInt } = require("../DB/beatmaps");
 const { IntToMods, ModsToInt } = require("./osu_mods");
 const { calc_action_single, get_beatmaps_by_gamemode_and_status, get_beatmap_pps_by_mods_and_acc } = require("./beatmaps_pp_calc");
 
-module.exports = async ({ beatmap_id = null, mods_args = 'NM', acc = 99, gamemode = 'osu'  }) => {
+module.exports = async ({ beatmap_id = null, beatmapset_id = null, mods_int = 0, acc = 99, gamemode = 0  }) => {
 
-	if (!beatmap_id) {
+	if (!beatmap_id && !beatmapset_id) {
 		console.log('no beatmap_id');
-        return;
+        return null;
 	}
 
-	const mods_int = ModsToInt(mods_args);
-	const gamemode_int = GetGamemodeToInt(gamemode);
-
-	const find_db_args = { gamemode: gamemode_int, mods: mods_int, accuracy: acc, beatmap_id };
+	const find_db_args = { gamemode, mods: mods_int, accuracy: acc, beatmap_id, beatmapset_id };
 	const calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc(find_db_args);
 	
 	if (calculated_osu_beatmaps.length > 0) {
@@ -27,14 +24,15 @@ module.exports = async ({ beatmap_id = null, mods_args = 'NM', acc = 99, gamemod
 	console.log('no');
 
 	const beatmap_ids = await get_beatmaps_by_gamemode_and_status({ 
-		gamemode: gamemode_int, 
+		gamemode, 
 		status: RankedStatus.ranked, 
-		beatmap_id: beatmap_id 
+		beatmap_id: beatmap_id,
+		beatmapset_id: beatmapset_id
 	});
 
 	if (beatmap_ids.length === 0) {
         console.log('no beatmap ids');
-        return;
+        return null;
     }
 
 	await calc_action_single({

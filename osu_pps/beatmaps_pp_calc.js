@@ -252,14 +252,16 @@ const calc_action_single = async (args) => {
 	});
 }
 
-const get_beatmaps_by_gamemode_and_status = async ({ gamemode, status, beatmap_id = null }) => {
+const get_beatmaps_by_gamemode_and_status = async ({ gamemode, status, beatmap_id = null, beatmapset_id = null }) => {
 	const beatmap_ids = select_mysql_model('beatmap_id');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
 	let beatmap_id_condition = {};
-	if (beatmap_id) { 
-		beatmap_id_condition = { beatmap_id };
+
+	if (beatmap_id && beatmapset_id) { 
+		beatmap_id_condition = { beatmap_id, beatmapset_id };
 	}
+
 
     return await beatmap_ids.findAll( {
         where: {

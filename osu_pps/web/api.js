@@ -8,6 +8,7 @@ const { irc_say } = require('../../twitchchat/tools/ircManager');
 const { formatBeatmapInfoOsu } = require('../../twitchchat/tools/format_beatmap');
 const { v2 } = require('osu-api-extended');
 const { checkTokenExpires } = require('../../osu/requests');
+const calculate_single_beatmap = require('../calculate_single_beatmap');
 
 const last_request_params_path = path.join(__dirname, '..', '..', 'data', 'osu_pps', 'last_request_params.json');
 
@@ -94,15 +95,37 @@ module.exports = {
 					return;
 				}
 
-				request_data = {...request_data,
-					beatmapset_id: url_parts[1]? Number(url_parts[1]): null,
-					gamemode: url_parts[3]? GetGamemodeToInt(url_parts[3]): null,
-					beatmap_id: url_parts[4]? Number(url_parts[4]): null
-				};
+				if (!url_parts[1] || !url_parts[3] || !url_parts[4]) {
+					const error = {error: `ссылка - неполная`};
+                    res.send( error );
+                    return;
+				}
 
+				request_data = {...request_data,	//mods_int, gamemode
+					beatmapset_id: Number(url_parts[1]),
+					gamemode: GetGamemodeToInt(url_parts[3]),
+					beatmap_id: Number(url_parts[4])
+				};
+				
 				const result = await find_beatmap_pps(request_data);
 
-				res.send( result );
+				if (result.length > 0) {
+					res.send( result );
+					return;
+				}
+
+				const calculated = await calculate_single_beatmap(request_data);
+
+				if (calculated) {
+					console.log('calculated send');
+					res.send(await find_beatmap_pps(request_data));
+					return;
+				} else {
+					console.log('не удалось скалькулировать');
+					res.send([]);
+					return;
+				}
+				
 			});
 
 			app.on('error', (e) => {

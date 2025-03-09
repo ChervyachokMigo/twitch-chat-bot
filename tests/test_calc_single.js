@@ -7,8 +7,12 @@ const main = async () => {
 	const beatmap_id = 2084862;
 	const mods_args = 'DTHD';
 	const acc = 69;
+	const gamemode = 'osu';
 
-	await calculate_single_beatmap({ beatmap_id, acc, mods_args })
+
+	const mods_int = ModsToInt(mods_args);
+
+	await calculate_single_beatmap({ beatmap_id, acc, mods_int, gmaemode: GetGamemodeToInt(gamemode) });
 	process.exit()
 }
 
