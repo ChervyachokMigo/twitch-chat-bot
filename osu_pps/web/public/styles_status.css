@@ -1,0 +1,47 @@
+.status_list {
+	height: 100%;
+    width: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.status_create {
+	animation: 1s status_create_animation ease-out;
+}
+
+@keyframes status_create_animation {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.status_active {
+	opacity: 1 !important;
+}
+
+.status_exit {
+    animation: 1s status_exit_animation ease-in;
+}
+
+@keyframes status_exit_animation {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.status_item {
+	background: #3a3a3a;
+	margin: 5px 15px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #ff6f91;
+	opacity: 0;
+}
+
+.status_text {
+	font-size: 20px;
+    font-weight: bold;
+}

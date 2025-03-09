@@ -176,7 +176,6 @@ const render_beatmaps = () => {
 const set_last_data = (data) => {
 	current_page = 0;
 	last_data = data;
-	console.log(last_data)
 	last_data = last_data.map( v => ({...v, circles_percent: v.hit_count / (v.hit_count + v.slider_count) }));
 }
 
@@ -258,6 +257,22 @@ const find_beatmap = () => {
 
 
 $( document ).ready( function() {
+	$('.status_item').addClass('status_create');
+	$(".status_item").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function(){
+		const this_el = this;
+		$(this_el).removeClass("status_create");
+		$(this_el).addClass("status_active");
+		setTimeout(function(){ 
+			$(this_el).removeClass("status_active"); 
+			$(this_el).addClass("status_exit");
+			$(this_el).bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function(){
+				
+			});
+		}, 3000);
+	});
+	
+
+
 	hide_form();
 
 	post('get_last_params')

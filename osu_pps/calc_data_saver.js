@@ -73,10 +73,10 @@ module.exports = {
 				console.log(`save_calculated_data > ${Gamemodes[g]} > ${data.length} rows`);
 				if (g == Gamemode.osu) {
 					const res = await MYSQL_SAVE('osu_beatmap_pp', data );
-					console.log('saved res', res.length);
+					//console.log('saved res', res.length);
 				} else if (g == Gamemode.taiko) {
                     const res = await MYSQL_SAVE('taiko_beatmap_pp', data );
-					console.log('saved res', res.length);
+					//console.log('saved res', res.length);
                 } else {
 					console.log(`save_calculated_data > skipping not std and taiko`);
                     //skip other modes

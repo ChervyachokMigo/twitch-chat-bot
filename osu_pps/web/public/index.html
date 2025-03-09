@@ -8,6 +8,7 @@
 
 	<link href="styles.css" rel="stylesheet">
 	<link href="styles_form.css" rel="stylesheet">
+	<link href="styles_status.css" rel="stylesheet">
 	<script src="jquery-3.7.1.min.js"></script>
 	<link href="favicon.png" rel="icon" type="image/x-icon" >
 	
@@ -48,85 +49,93 @@
 
 	<div class="form_outside">
 
-	<div class="form">
-		
-		<div class="form_input hide_button">
-			<input type="button" onclick="toggle_form()" value="X"/>
+		<div class="form">
+			
+			<div class="form_input hide_button">
+				<input type="button" onclick="toggle_form()" value="X"/>
+			</div>
+
+			<div class="form_name">🔍 Поиск по параметрам</div>
+
+			<div class="form_input">
+				<label for="gamemode">Режим</label>
+				<select id="gamemode">
+					<option value="0">Стандарт</option>
+					<option value="1">Тайко</option>
+					<option value="2">Мания</option>
+					<option value="3">Фрукты</option>
+				</select>
+			</div>
+
+			<div class="form_input">
+				<label for="acc">🎯 Точность</label>
+				<input type="number" id="acc" placeholder="accuracy" value="99" />
+			</div>
+
+			<div class="form_input">
+				<label for="pp_min">PP мин</label>
+				<input type="number" id="pp_min" placeholder="pp min" value="300" />
+			</div>
+
+			<div class="form_input">
+				<label for="pp_max">PP макс</label>
+				<input type="number" id="pp_max" placeholder="pp max" value="350" />
+			</div>
+
+			<div class="form_input">
+				<label for="bpm_min">🎵 BPM мин</label>
+				<input type="number" id="bpm_min" placeholder="bpm min" value="0" />
+			</div>
+
+			<div class="form_input">
+				<label for="bpm_max">🎵 BPM макс</label>
+				<input type="number" id="bpm_max" placeholder="bpm max" value="1000" />
+			</div>
+
+			<div class="form_input">
+				<label for="stream_min">Сложность стримов мин</label>
+				<input type="number" id="stream_min" placeholder="stream min" value="0" />
+			</div>
+
+			<div class="form_input">
+				<label for="stream_max">Сложность стримов макс</label>
+				<input type="number" id="stream_max" placeholder="stream max" value="1000" />
+			</div>
+
+			<div class="form_input">
+				<label for="mods_int">Моды</label>
+				<input type="text" id="mods_int" placeholder="mods" value="NM" />
+			</div>
+
+			<div class="form_input send_button">
+				<input type="button" onclick="send_request()" value="Получить"/>
+			</div>
+
+			<div class="form_name">Другие параметры</div>
+
+			<div class="form_input">
+				<label for="osuname">Осу игрок</label>
+				<input type="text" id="osuname" placeholder="osuname" value="BanchoBot" />
+			</div>
+
+			<div class="form_input">
+				<label for="beatmap_url">Ссылка на карту</label>
+				<input type="text" id="beatmap_url" placeholder="beatmap_url" />
+			</div>
+
+			<div class="form_input find_button">
+				<input type="button" onclick="find_beatmap()" value="Найти"/>
+			</div>
+
 		</div>
-
-		<div class="form_name">🔍 Поиск по параметрам</div>
-
-		<div class="form_input">
-			<label for="gamemode">Режим</label>
-			<select id="gamemode">
-				<option value="0">Стандарт</option>
-				<option value="1">Тайко</option>
-				<option value="2">Мания</option>
-				<option value="3">Фрукты</option>
-			</select>
-		</div>
-
-		<div class="form_input">
-			<label for="acc">🎯 Точность</label>
-			<input type="number" id="acc" placeholder="accuracy" value="99" />
-		</div>
-
-		<div class="form_input">
-			<label for="pp_min">PP мин</label>
-			<input type="number" id="pp_min" placeholder="pp min" value="300" />
-		</div>
-
-		<div class="form_input">
-			<label for="pp_max">PP макс</label>
-			<input type="number" id="pp_max" placeholder="pp max" value="350" />
-		</div>
-
-		<div class="form_input">
-			<label for="bpm_min">🎵 BPM мин</label>
-			<input type="number" id="bpm_min" placeholder="bpm min" value="0" />
-		</div>
-
-		<div class="form_input">
-			<label for="bpm_max">🎵 BPM макс</label>
-			<input type="number" id="bpm_max" placeholder="bpm max" value="1000" />
-		</div>
-
-		<div class="form_input">
-			<label for="stream_min">Сложность стримов мин</label>
-			<input type="number" id="stream_min" placeholder="stream min" value="0" />
-		</div>
-
-		<div class="form_input">
-			<label for="stream_max">Сложность стримов макс</label>
-			<input type="number" id="stream_max" placeholder="stream max" value="1000" />
-		</div>
-
-		<div class="form_input">
-			<label for="mods_int">Моды</label>
-			<input type="text" id="mods_int" placeholder="mods" value="NM" />
-		</div>
-
-		<div class="form_input send_button">
-			<input type="button" onclick="send_request()" value="Получить"/>
-		</div>
-
-		<div class="form_name">Другие параметры</div>
-
-		<div class="form_input">
-			<label for="osuname">Осу игрок</label>
-			<input type="text" id="osuname" placeholder="osuname" value="BanchoBot" />
-		</div>
-
-		<div class="form_input">
-			<label for="beatmap_url">Ссылка на карту</label>
-			<input type="text" id="beatmap_url" placeholder="beatmap_url" />
-		</div>
-
-		<div class="form_input find_button">
-			<input type="button" onclick="find_beatmap()" value="Найти"/>
-		</div>
-
 	</div>
+
+	<div class="status_list">
+		<div id="status_items">
+			<div class="status_item">
+                <div class="status_text">Загрузка...</div>
+            </div>
+		</div>
 	</div>
 	
 </body>

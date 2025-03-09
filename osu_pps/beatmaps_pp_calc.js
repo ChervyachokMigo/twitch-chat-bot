@@ -196,6 +196,62 @@ const calcAction = (input) => {
 
 }
 
+const calc_action_single = async (args) => {
+	const {md5, md5_int, gamemode = 0, acc = 100, mods = []} = args;
+	const filepath = path.join(path.dirname(__dirname), beatmaps_cache, `${md5}.osu`);
+	
+	return new Promise( (res, rej) =>{	
+		if (!fs.existsSync(filepath)) {
+			rej(`error: beatmap ${md5}.osu not found`);
+            return;
+		}
+
+		let result = '';
+
+		const proc_args = [
+			calc_dll,
+			'simulate', 
+			Gamemodes[gamemode],
+			...mods.length > 0? mods.map( x => `-m ${x}`): ['-m CL'],
+			'-j',
+			filepath,
+			`-a ${acc}`,
+		];
+
+		const proc = spawn( 'dotnet', proc_args, {windowsHide: true});
+
+		proc.stdout.on('data', (data) => {
+			if (data.length > 0){
+				result += data;
+			} else {
+				console.error('calc > error > calc process return zero data');
+			}
+		})
+
+		proc.stdout.on('close', async () =>{
+			if (result.length > 0){
+				try{
+					const data = { md5_int, ...JSON.parse(result), mods };
+					calc_result_add (data);
+					await save_calculated_data();
+				} catch (e){
+					console.error('result', result);
+					console.error(`calc > error > something wrong with beatmap ${md5}.osu`);
+					rej(`error: something wrong with beatmap ${md5}.osu`);
+				}
+			} else {
+				console.error('calc > error > calc process closed without result');
+				rej('error: calc process closed without result');
+			}
+		});
+
+		proc.on('exit', async () => {
+			res(true)
+		});
+
+	});
+}
+
 const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
 	const beatmap_ids = select_mysql_model('beatmap_id');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
@@ -504,6 +560,8 @@ const init_calc_action = async ( gamemode, beatmaps = [], { acc = 100, mods } ) 
 
 module.exports = {
     init_calc_action,
-    calc_from_mysql
+    calc_from_mysql,
+	calc_action_single,
+	get_beatmaps_by_gamemode_and_status
 }
 
