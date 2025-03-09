@@ -252,13 +252,20 @@ const calc_action_single = async (args) => {
 	});
 }
 
-const get_beatmaps_by_gamemode_and_status = async (gamemode, status) => {
+const get_beatmaps_by_gamemode_and_status = async ({ gamemode, status, beatmap_id = null }) => {
 	const beatmap_ids = select_mysql_model('beatmap_id');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
+	let beatmap_id_condition = {};
+	if (beatmap_id) { 
+		beatmap_id_condition = { beatmap_id };
+	}
+
     return await beatmap_ids.findAll( {
         where: {
-            gamemode, ranked: status
+            gamemode, 
+			ranked: status,
+			...beatmap_id_condition
         },
         raw: true,
 
@@ -285,8 +292,8 @@ const calc_from_mysql = async (gamemode = 'osu', ranked = ranked_status.ranked) 
 
 	CreateFolderSync_IsNotExists(beatmaps_cache);
 
-    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status(gamemode_int, ranked))
-    .sort ( (a, b) => a.md5.localeCompare(b.md5) );
+    const beatmaps_data = (await get_beatmaps_by_gamemode_and_status({ gamemode: gamemode_int, status: ranked }))
+		.sort ( (a, b) => a.md5.localeCompare(b.md5) );
 
     if (is_key_events){
         init_key_events();
@@ -428,32 +435,63 @@ const init_key_events = () => {
     process.stdin.resume();
 }
 
-const get_beatmap_pps_by_mods_and_acc = async (gamemode, condition) => {
+const get_beatmap_pps_by_mods_and_acc = async (args) => {
 
 	const osu_beatmap_pp = select_mysql_model('osu_beatmap_pp');
 	const taiko_beatmap_pp = select_mysql_model('taiko_beatmap_pp');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
+	const beatmap_ids = select_mysql_model('beatmap_id');
+
+	const copy_args = Object.assign({}, args);
+
+	let gamemode = null;
+
+	if (typeof copy_args.gamemode !== 'undefined') {
+		gamemode = copy_args.gamemode;
+		delete copy_args.gamemode;
+	} else {
+		console.error('Invalid gamemode');
+        return [];
+	}
+
+	let beatmap_ids_condition = {};
+
+	const beatmap_ids_names = ['beatmap_id', 'beatmapset_id', 'gamemode', 'ranked'];
+
+	for (let name of beatmap_ids_names) {
+		if (name in copy_args) {
+            beatmap_ids_condition = {...beatmap_ids_condition, [name]: copy_args[name]}
+			delete copy_args[name];
+        }
+	}
 
 	if (gamemode == Gamemode.osu) {
 
 		return await osu_beatmap_pp.findAll( {
-			where: condition,
+			where: copy_args,
 			raw: true,
 
-			include: [beatmaps_md5],
+			include: [beatmaps_md5, { model: beatmap_ids, where: beatmap_ids_condition }],
 
 			fieldMap: {
 				'beatmaps_md5.hash': 'md5',
 			
 				'beatmaps_md5.id': 'md5_int',
 				'osu_beatmap_pp.md5': 'md5_int',
+				'beatmap_id.md5': 'md5_int',
+
+				'beatmap_id.beatmap_id': 'beatmap_id',
+				'beatmap_id.beatmapset_id': 'beatmapset_id',
+				'beatmap_id.gamemode': 'gamemode',
+				'beatmap_id.ranked': 'ranked',
+        
 			}
 
 		});
 
 	} else if (gamemode == Gamemode.taiko) {
 		return await taiko_beatmap_pp.findAll( {
-			where: condition,
+			where: copy_args,
 			raw: true,
 
 			include: [beatmaps_md5],
@@ -478,7 +516,7 @@ const init_calc_action = async ( gamemode, beatmaps = [], { acc = 100, mods } ) 
 
     const mods_int = ModsToInt(mods);
 
-    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc(gamemode, { mods: mods_int, accuracy: acc });
+    calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc({ gamemode, mods: mods_int, accuracy: acc });
 
     const calculated_set = new Set( calculated_osu_beatmaps.map( (x) =>`${x.md5_int}:${x.accuracy}:${x.mods}` ));
 
@@ -562,6 +600,7 @@ module.exports = {
     init_calc_action,
     calc_from_mysql,
 	calc_action_single,
-	get_beatmaps_by_gamemode_and_status
+	get_beatmaps_by_gamemode_and_status,
+	get_beatmap_pps_by_mods_and_acc
 }
 
