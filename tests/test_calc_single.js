@@ -12,7 +12,10 @@ const main = async () => {
 
 	const mods_int = ModsToInt(mods_args);
 
-	await calculate_single_beatmap({ beatmap_id, acc, mods_int, gmaemode: GetGamemodeToInt(gamemode) });
+	const res = await calculate_single_beatmap({ beatmap_id, acc, mods_int, gmaemode: GetGamemodeToInt(gamemode) });
+
+	console.log(res);
+
 	process.exit()
 }
 

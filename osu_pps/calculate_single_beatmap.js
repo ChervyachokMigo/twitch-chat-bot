@@ -7,7 +7,7 @@ const { calc_action_single, get_beatmaps_by_gamemode_and_status, get_beatmap_pps
 module.exports = async ({ beatmap_id = null, beatmapset_id = null, mods_int = 0, acc = 99, gamemode = 0  }) => {
 
 	if (!beatmap_id && !beatmapset_id) {
-		console.log('no beatmap_id');
+		//console.log('no beatmap_id');
         return null;
 	}
 
@@ -15,13 +15,13 @@ module.exports = async ({ beatmap_id = null, beatmapset_id = null, mods_int = 0,
 	const calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc(find_db_args);
 	
 	if (calculated_osu_beatmaps.length > 0) {
-		console.log('yes')
+		//console.log('yes')
 		const res = calculated_osu_beatmaps.shift();
-		console.log(res)
+		//console.log(res);
         return res;
     }
 
-	console.log('no');
+	//console.log('no');
 
 	const beatmap_ids = await get_beatmaps_by_gamemode_and_status({ 
 		gamemode, 
@@ -31,7 +31,7 @@ module.exports = async ({ beatmap_id = null, beatmapset_id = null, mods_int = 0,
 	});
 
 	if (beatmap_ids.length === 0) {
-        console.log('no beatmap ids');
+        //console.log('no beatmap ids');
         return null;
     }
 
@@ -41,16 +41,16 @@ module.exports = async ({ beatmap_id = null, beatmapset_id = null, mods_int = 0,
 		mods: IntToMods(mods_int) 
 	});
 
-	console.log('complete');
+	//console.log('complete');
 	const new_result = await get_beatmap_pps_by_mods_and_acc(find_db_args);
 
 	if (new_result.length > 0) {
-		console.log('yes')
+		//console.log('yes')
 		const res = new_result.shift();
-		console.log(res);
+		//console.log(res);
         return res;
     } else {
-        console.log('no');
+        //console.log('no');
         return null;
 	}
 

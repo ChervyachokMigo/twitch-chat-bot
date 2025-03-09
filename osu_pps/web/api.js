@@ -117,7 +117,7 @@ module.exports = {
 				const calculated = await calculate_single_beatmap(request_data);
 
 				if (calculated) {
-					console.log('calculated send');
+					console.log('send calculated');
 					res.send(await find_beatmap_pps(request_data));
 					return;
 				} else {
