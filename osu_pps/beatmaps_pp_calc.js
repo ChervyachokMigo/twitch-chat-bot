@@ -156,7 +156,7 @@ const calcAction = (input) => {
     proc.stdout.on('close', async () =>{
         if (result.length > 0){
             try{
-				const data = { md5_int, ...JSON.parse(result), mods };
+				const data = { md5_int, ...JSON.parse(result), mods, acc };
                 calc_result_add (data);
             } catch (e){
 				console.log(result);
@@ -231,7 +231,7 @@ const calc_action_single = async (args) => {
 		proc.stdout.on('close', async () =>{
 			if (result.length > 0){
 				try{
-					const data = { md5_int, ...JSON.parse(result), mods };
+					const data = { md5_int, ...JSON.parse(result), mods, acc };
 					calc_result_add (data);
 					await save_calculated_data();
 				} catch (e){

@@ -6,7 +6,7 @@ const main = async () => {
 
 	const beatmap_id = 2084862;
 	const mods_args = 'DTHD';
-	const acc = 100;
+	const acc = 69;
 
 	await calculate_single_beatmap({ beatmap_id, acc, mods_args })
 	process.exit()

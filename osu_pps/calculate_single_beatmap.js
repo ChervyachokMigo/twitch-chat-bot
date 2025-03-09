@@ -15,7 +15,6 @@ module.exports = async ({ beatmap_id = null, mods_args = 'NM', acc = 99, gamemod
 	const gamemode_int = GetGamemodeToInt(gamemode);
 
 	const find_db_args = { gamemode: gamemode_int, mods: mods_int, accuracy: acc, beatmap_id };
-
 	const calculated_osu_beatmaps = await get_beatmap_pps_by_mods_and_acc(find_db_args);
 	
 	if (calculated_osu_beatmaps.length > 0) {
@@ -45,12 +44,11 @@ module.exports = async ({ beatmap_id = null, mods_args = 'NM', acc = 99, gamemod
 	});
 
 	console.log('complete');
-
 	const new_result = await get_beatmap_pps_by_mods_and_acc(find_db_args);
 
 	if (new_result.length > 0) {
 		console.log('yes')
-		const res = calculated_osu_beatmaps.shift();
+		const res = new_result.shift();
 		console.log(res);
         return res;
     } else {

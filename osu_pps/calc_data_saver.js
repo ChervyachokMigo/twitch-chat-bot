@@ -20,14 +20,14 @@ module.exports = {
 		const mods = ModsToInt(score.mods.map( x => x.acronym));*/
 	},
 
-    calc_result_add: ({ md5_int, score, performance_attributes, difficulty_attributes, mods }) => {
+    calc_result_add: ({ md5_int, score, performance_attributes, difficulty_attributes, mods, acc }) => {
 		const gamemode = score.ruleset_id;
 
 		if (gamemode == Gamemode.osu) {
 			calculated_chunk_data[gamemode].push({
 				md5: md5_int,
 				mods: ModsToInt(mods),
-				accuracy: Math.round(score.accuracy),
+				accuracy: Math.round(acc),
 				pp_total: Math.round(performance_attributes.pp),
 				pp_aim: Math.round(performance_attributes.aim),
 				pp_speed: Math.round(performance_attributes.speed),
@@ -44,7 +44,7 @@ module.exports = {
 			calculated_chunk_data[gamemode].push({
 				md5: md5_int,
 				mods: ModsToInt(mods),
-				accuracy: Math.round(score.accuracy),
+				accuracy: Math.round(acc),
 				pp_total: Math.round(performance_attributes.pp),
 				pp_difficulty: Math.round(performance_attributes.difficulty),
 				pp_ur: Math.round(performance_attributes.estimated_unstable_rate),
