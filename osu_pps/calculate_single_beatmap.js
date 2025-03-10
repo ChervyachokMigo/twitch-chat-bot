@@ -25,7 +25,7 @@ module.exports = async ({ beatmap_id = null, beatmapset_id = null, mods_int = 0,
 
 	const beatmap_ids = await get_beatmaps_by_gamemode_and_status({ 
 		gamemode, 
-		status: RankedStatus.ranked, 
+		//status: RankedStatus.ranked, 
 		beatmap_id: beatmap_id,
 		beatmapset_id: beatmapset_id
 	});

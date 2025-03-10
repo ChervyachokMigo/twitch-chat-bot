@@ -252,7 +252,7 @@ const calc_action_single = async (args) => {
 	});
 }
 
-const get_beatmaps_by_gamemode_and_status = async ({ gamemode, status, beatmap_id = null, beatmapset_id = null }) => {
+const get_beatmaps_by_gamemode_and_status = async ({ gamemode, status = null, beatmap_id = null, beatmapset_id = null }) => {
 	const beatmap_ids = select_mysql_model('beatmap_id');
 	const beatmaps_md5 = select_mysql_model('beatmaps_md5');
 
@@ -262,11 +262,16 @@ const get_beatmaps_by_gamemode_and_status = async ({ gamemode, status, beatmap_i
 		beatmap_id_condition = { beatmap_id, beatmapset_id };
 	}
 
+	let status_condition = {};
+	if (status) {
+		status_condition = { ranked: status };
+	}
+
 
     return await beatmap_ids.findAll( {
         where: {
             gamemode, 
-			ranked: status,
+			...status_condition,
 			...beatmap_id_condition
         },
         raw: true,
@@ -531,7 +536,7 @@ const init_calc_action = async ( gamemode, beatmaps = [], { acc = 100, mods } ) 
     for (let beatmap of beatmaps){
         // md5, beatmap_id, beatmapset_id, gamemode, ranked, md5_int
         
-        if (beatmap.ranked !== 4){
+        if (beatmap.ranked !== ranked_status.ranked){
             //console.log('skip >', beatmap.md5)
             continue;
         }

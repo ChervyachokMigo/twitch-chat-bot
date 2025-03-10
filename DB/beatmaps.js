@@ -133,7 +133,7 @@ const find_beatmap_pps = async (args) => {
 		acc = 99,
 		gamemode = 0, 
 		mods_int = 0, 
-		ranked = 4, 
+		ranked = null, 
 		pp_min = 0, 
 		pp_max = 10000, 
 		aim = null, 
@@ -173,13 +173,19 @@ const find_beatmap_pps = async (args) => {
 			}
 		}
 
-		let beatmap_condition = {
-			gamemode, ranked
+
+		let status_condition = {};
+		
+		if (ranked) {
+			status_condition = { ranked: ranked };
+		}
+
+        let beatmap_condition = {
+			gamemode
 		};
 
 		if (beatmap_id && beatmapset_id) {
 			beatmap_condition = {
-				...beatmap_condition,
 				beatmap_id,
                 beatmapset_id,
 			}
@@ -199,7 +205,7 @@ const find_beatmap_pps = async (args) => {
 			},
 
 			include: [beatmaps_md5, 
-				{ model: osu_beatmap_id, where: beatmap_condition },
+				{ model: osu_beatmap_id, where: {...beatmap_condition, ...status_condition} },
 				osu_beatmap_info,
 				{ model: beatmap_params, where: {
 					bpm_avg: {
