@@ -90,14 +90,12 @@ module.exports = {
 				const url_parts = request_data.beatmap_url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
 		
 				if (url_parts === null) {
-					const error = {error: `ссылка - не битмапсет`};
-					res.send( error );
+					res.send({ error: `Ссылка не битмапсет` });
 					return;
 				}
 
 				if (!url_parts[1] || !url_parts[3] || !url_parts[4]) {
-					const error = {error: `ссылка - неполная`};
-                    res.send( error );
+                    res.send({ error: `Cсылка неполная` });
                     return;
 				}
 
@@ -118,11 +116,11 @@ module.exports = {
 
 				if (calculated) {
 					console.log('send calculated');
-					res.send(await find_beatmap_pps(request_data));
+					const founded = await find_beatmap_pps(request_data);
+					res.send(founded);
 					return;
 				} else {
-					console.log('не удалось скалькулировать');
-					res.send([]);
+					res.send({ error: 'Карта отсутствует, не удалось скалькулировать карту'});
 					return;
 				}
 				

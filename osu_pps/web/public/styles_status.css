@@ -32,13 +32,19 @@
     to { opacity: 0; }
 }
 
+.status_items {
+    margin-top: -400px;
+}
+
 .status_item {
 	background: #3a3a3a;
 	margin: 5px 15px;
     padding: 8px 16px;
     border-radius: 20px;
     border: 1px solid #ff6f91;
-	opacity: 0;
+	right: 0;
+	white-space: nowrap;
+    text-align: center;
 }
 
 .status_text {

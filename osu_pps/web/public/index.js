@@ -56,6 +56,33 @@ const toggle_form = () => {
 	}
 }
 
+let statuses_count = 0;
+const statuses = [];
+
+const remove_status = () => {
+	const idx = statuses.findIndex( v => !v.is_remove);
+	if (idx === -1) {
+		console.log('no statuses to remove');
+		return;
+	}
+	statuses[idx].is_remove = true;
+	const el = statuses[idx].el;
+	setTimeout(()=> el.fadeOut(500, () => el.remove()), 80 * statuses[idx].text_length ); 
+}
+
+const add_status = (text) => {
+	const idx = statuses_count++;
+	const el = $(`<div>`, {
+		class: `status_item`, 
+		text,
+		id: `status_${idx}`
+	});
+	statuses.push({el, idx, text_length: text.length, is_remove: false});
+
+	el.appendTo('.status_items').hide().fadeIn(300);
+
+}
+
 const post = async (action_name, request_args) => {
 	return new Promise ( (res ,rej) => 
 		fetch('http://localhost:3003/' + action_name, {
@@ -67,7 +94,7 @@ const post = async (action_name, request_args) => {
 		}).then( response => response.json())
 		.then( data => res (data) )
 		.catch( error => {
-			console.error(error);
+			console.log(error)
 			rej({ error });
 		})
 	);
@@ -98,13 +125,20 @@ const format_time = (time_ms) => {
 }
 
 const send_beatmap = (idx) => {
-	post('send_beatmap_to_osu', { beatmap: last_data[idx], user: document.getElementById('osuname').value})
+	const user = document.getElementById('osuname').value;
+
+	add_status(`Отправка карты юзеру "${user}"`);
+
+	post('send_beatmap_to_osu', { beatmap: last_data[idx], user })
 		.then(data => {
 			if (data.error) {
 				console.error(data.error);
 			} else {
 				console.log(data)
 			}
+		})
+		.finally( () => {
+			remove_status();
 		});
 }
 
@@ -185,6 +219,8 @@ const send_request = () => {
 	render_beatmaps();
 	hide_form();
 
+	add_status('Запрос данных');
+
 	const request = {
 		acc: parseNumber(document.getElementById('acc').value, 100),
 		pp_min: parseNumber(document.getElementById('pp_min').value, 300),
@@ -203,16 +239,42 @@ const send_request = () => {
 			if (data.error) {
 				console.error(data.error);
 			} else {
-				set_last_data(data);
-				sort(document.getElementById('sort'));
+				if (data.length > 0) {
+					add_status(`Найдено ${data.length} карт`);
+					remove_status();
+					set_last_data(data);
+					sort(document.getElementById('sort'));
+				} else {
+					add_status(`Ошибка: Карт не найдено`);
+					remove_status();
+				}
 			}
-		}).catch( error => console.error(error));   
+		})
+		.finally( () => {
+			remove_status();
+		});
 	
 	return false;
 }
 
+const sort_text_view = {
+	PP_DESC: 'PP по-убыванию',
+	PP_ASC: 'PP по-возрастанию',
+    BPM_DESC: 'BPM по-убыванию',
+    BPM_ASC: 'BPM по-возрастанию',
+    STARS_DESC: 'Звезды по-убыванию',
+    STARS_ASC: 'Звезды по-возрастанию',
+	LENGTH_DESC: 'Длительность по-убыванию',
+    LENGTH_ASC: 'Длительность по-возрастанию',
+    STREAM_DESC: 'Сложность стрима по-убыванию',
+    STREAM_ASC: 'Сложность стрима по-возрастанию',
+	CIRCLES_ASC: 'Процент кругов по-возрастанию',
+    CIRCLES_DESC: 'Процент кругов по-убыванию',
+}
+
 const sort = (el) => {
 	const value = el.value;
+	add_status(`Сортировка "${sort_text_view[value]}"`);
 	last_data = last_data.sort(
 		(a, b) => {
 			switch (value) {
@@ -232,6 +294,7 @@ const sort = (el) => {
 		}
 	);
 	render_beatmaps();
+	remove_status();
 }
 
 const find_beatmap = () => {
@@ -242,38 +305,29 @@ const find_beatmap = () => {
 	render_beatmaps();
 	hide_form();
 
+	add_status('Поиск карты');
+
     post('find_beatmap', { beatmap_url, mods_int })
         .then(data => {
             if (data.error) {
                 console.error(data.error);
+				add_status(`Ошибка: ${data.error}`);
+				remove_status();
             } else {
                 set_last_data(data);
                 render_beatmaps();
             }
-        }).catch(error => console.error(error));    
+        })
+		.finally( () => remove_status() );    
 
     return false;
 }
 
-
 $( document ).ready( function() {
-	$('.status_item').addClass('status_create');
-	$(".status_item").bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function(){
-		const this_el = this;
-		$(this_el).removeClass("status_create");
-		$(this_el).addClass("status_active");
-		setTimeout(function(){ 
-			$(this_el).removeClass("status_active"); 
-			$(this_el).addClass("status_exit");
-			$(this_el).bind("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function(){
-				
-			});
-		}, 3000);
-	});
-	
-
 
 	hide_form();
+
+	add_status('Загрузка');
 
 	post('get_last_params')
 		.then(data => {
@@ -292,5 +346,6 @@ $( document ).ready( function() {
 				$('#osuname').val(data.osuname);
 				send_request();
 			}
-		});
+		})
+		.finally( () => remove_status() ); 
 });
