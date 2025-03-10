@@ -141,4 +141,11 @@ input[type="button"]:hover, button:hover {
 .output_control {
 	display: flex;
     flex-direction: row-reverse;
+	padding-right: 5px;
+}
+
+.output_control > input {
+	margin-left: 5px;
+    margin-bottom: 5px;
+	width: 120px;
 }

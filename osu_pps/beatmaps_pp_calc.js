@@ -71,7 +71,7 @@ const ActionsController =  async () => {
     }
 
 	if (!actions_max) {
-		console.log('no calc actions');
+		console.log('done. No calc actions');
 		return;
 	}
 

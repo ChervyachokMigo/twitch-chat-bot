@@ -142,6 +142,25 @@ const send_beatmap = (idx) => {
 		});
 }
 
+const play_preview = (button, beatmapset_id) => {
+	$('.audio_play').val('Прослушать');
+	const url = `https://b.ppy.sh/preview/${beatmapset_id}.mp3`;
+	const audio = document.getElementById('audio_player');
+    if (audio.src == url){
+        if (audio.paused){
+            audio.play();
+			button.value = 'Остановить';
+        } else {
+            audio.pause();
+			button.value = 'Прослушать';
+        }
+    } else {
+        audio.src = url;
+        audio.play();
+		button.value = 'Остановить';
+    }
+}
+
 const render_beatmaps = () => {
 
 	if (last_data.length == 0) {
@@ -192,6 +211,7 @@ const render_beatmaps = () => {
 		output_html += 	`</div></a>`;
 			
 		output_html += 	`<div class="output_control">
+							<input class="audio_play" type="button" onclick="play_preview(this, ${beatmap.beatmapset_id});" value="Прослушать">
 							<input type="button" onclick="send_beatmap(${idx});" value="Отправить">
 						</div>`;
 			
@@ -205,7 +225,7 @@ const render_beatmaps = () => {
 
 	document.getElementById('output').innerHTML = output_html;
 
-}//https://b.ppy.sh/preview/1849738.mp3
+}
 
 const set_last_data = (data) => {
 	current_page = 0;
