@@ -40,13 +40,17 @@ const start_webserver = (port, public_path = path.join(__dirname, 'public')) => 
 		}
 	});
 
-	web_app.use(express.static( public_path ));
+	app.use(express.static( public_path ));
 
 	app.listen(port, '0.0.0.0',  () => {
 		console.log(`http://localhost:${port}`);
 	});
 
 	return app;
+}
+
+const cache = {
+	requests: []
 }
 
 module.exports = {
@@ -64,9 +68,6 @@ module.exports = {
 		}
 
 		const web_app = start_webserver(80);
-
-
-
 
         //API POSTS
 
@@ -96,7 +97,18 @@ module.exports = {
 				writeFileSync(last_request_params_path, JSON.stringify(request_data));
 			}
 
+			const request_string = Object.entries(request_data).map( ([key, val]) => `${key}:${val}`).join(';');
+			
+			const idx = cache.requests.findIndex( v => v.params === request_string );
+
+            if (idx > -1) {
+				console.log('sended cached data for', request_string);
+                res.send(cache.requests[idx].data);
+				return;
+            }
+
 			const result = await find_beatmap_pps(request_data);
+			cache.requests.push({ params: request_string, data: result });
 
 			res.send( result );
 		});

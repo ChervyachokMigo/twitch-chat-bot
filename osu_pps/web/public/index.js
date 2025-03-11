@@ -84,12 +84,13 @@ const add_status = (text) => {
 }
 
 const host = 'svdgod.ru';
-const port = '80';
+
+let token = '';
 
 const post = async (action_name, request_args) => {
 	return new Promise ( (res ,rej) => {
-		console.log('fetch', `https://${host}:${port}/${action_name}`);
-		fetch(`https://${host}:${port}/${action_name}`, {
+		console.log('fetch', `https://${host}/${action_name}`);
+		fetch(`https://${host}/${action_name}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
