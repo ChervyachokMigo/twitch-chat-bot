@@ -27,6 +27,28 @@ const request_params_default = {
 
 let last_request_params = null;
 
+const start_webserver = (port, public_path = path.join(__dirname, 'public')) => {
+	const app = express();
+
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: false }));
+
+	app.on('error', (e) => {
+		if (e.code === 'EADDRINUSE') {
+			console.error('Address in use, retrying...');
+			rej('Address in use, retrying...');
+		}
+	});
+
+	web_app.use(express.static( public_path ));
+
+	app.listen(port, '0.0.0.0',  () => {
+		console.log(`http://localhost:${port}`);
+	});
+
+	return app;
+}
+
 module.exports = {
 	init: async () => {
 
@@ -41,102 +63,86 @@ module.exports = {
 			}
 		}
 
-		return await new Promise( (res, rej) => {
+		const web_app = start_webserver(80);
 
-			const app = express();
 
-			app.get('/', (req, res) => {
-				res.sendFile(path.join(__dirname, 'public', 'index.html'));
-			});
 
-			app.use(bodyParser.json());
-			app.use(bodyParser.urlencoded({ extended: false }));
 
-			app.use(express.static( path.join(__dirname, 'public') ));
-			
-			app.post('/get_last_params',async (req, res) => {
-				res.send(last_request_params);
-			});
+        //API POSTS
 
-			app.post('/send_beatmap_to_osu',async (req, res) => {
-				const request_data = req.body;
-
-				const message_text = formatBeatmapInfoOsu({ username: 'localhost', beatmap: request_data.beatmap });
-
-				irc_say(request_data.user, message_text);
-
-				res.send({ result: 'beatmap sended' });
-			});
-
-			app.post('/recomend',async (req, res) => {
-				const request_data = req.body;
-
-				if (Object.keys(request_data).length === 0) {
-                    return res.status(400).send('Request data is empty');
-                }
-
-				if (JSON.stringify(request_data) !== JSON.stringify(last_request_params)) {
-                    last_request_params = request_data;
-					writeFileSync(last_request_params_path, JSON.stringify(request_data));
-                }
-
-				const result = await find_beatmap_pps(request_data);
-
-				res.send( result );
-			});
-
-			app.post('/find_beatmap', async (req, res) => {
-				let request_data = req.body;
-				const url_parts = request_data.beatmap_url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
-		
-				if (url_parts === null) {
-					res.send({ error: `Ссылка не битмапсет` });
-					return;
-				}
-
-				if (!url_parts[1] || !url_parts[3] || !url_parts[4]) {
-                    res.send({ error: `Cсылка неполная` });
-                    return;
-				}
-
-				request_data = {...request_data,	//mods_int, gamemode
-					beatmapset_id: Number(url_parts[1]),
-					gamemode: GetGamemodeToInt(url_parts[3]),
-					beatmap_id: Number(url_parts[4])
-				};
-				
-				const result = await find_beatmap_pps(request_data);
-
-				if (result.length > 0) {
-					res.send( result );
-					return;
-				}
-
-				const calculated = await calculate_single_beatmap(request_data);
-
-				if (calculated) {
-					console.log('send calculated');
-					const founded = await find_beatmap_pps(request_data);
-					res.send(founded);
-					return;
-				} else {
-					res.send({ error: 'Карта отсутствует, не удалось скалькулировать карту'});
-					return;
-				}
-				
-			});
-
-			app.on('error', (e) => {
-				if (e.code === 'EADDRINUSE') {
-					console.error('Address in use, retrying...');
-					rej('Address in use, retrying...');
-				}
-			});
-
-			app.listen(3003, '0.0.0.0',  () => {
-				console.log(`http://localhost:3003`);
-				res(app);
-			});
+		web_app.post('/get_last_params',async (req, res) => {
+			res.send(last_request_params);
 		});
+
+		web_app.post('/send_beatmap_to_osu',async (req, res) => {
+			const request_data = req.body;
+
+			const message_text = formatBeatmapInfoOsu({ username: 'localhost', beatmap: request_data.beatmap });
+
+			irc_say(request_data.user, message_text);
+
+			res.send({ result: 'beatmap sended' });
+		});
+
+		web_app.post('/recomend',async (req, res) => {
+			const request_data = req.body;
+
+			if (Object.keys(request_data).length === 0) {
+				return res.status(400).send('Request data is empty');
+			}
+
+			if (JSON.stringify(request_data) !== JSON.stringify(last_request_params)) {
+				last_request_params = request_data;
+				writeFileSync(last_request_params_path, JSON.stringify(request_data));
+			}
+
+			const result = await find_beatmap_pps(request_data);
+
+			res.send( result );
+		});
+
+		web_app.post('/find_beatmap', async (req, res) => {
+			let request_data = req.body;
+			const url_parts = request_data.beatmap_url.match(/https:\/\/osu\.ppy\.sh\/beatmapsets\/([0-9]+)(\#([A-Za-z]+)\/([0-9]+)?)*/i );
+	
+			if (url_parts === null) {
+				res.send({ error: `Ссылка не битмапсет` });
+				return;
+			}
+
+			if (!url_parts[1] || !url_parts[3] || !url_parts[4]) {
+				res.send({ error: `Cсылка неполная` });
+				return;
+			}
+
+			request_data = {...request_data,	//mods_int, gamemode
+				beatmapset_id: Number(url_parts[1]),
+				gamemode: GetGamemodeToInt(url_parts[3]),
+				beatmap_id: Number(url_parts[4])
+			};
+			
+			const result = await find_beatmap_pps(request_data);
+
+			if (result.length > 0) {
+				res.send( result );
+				return;
+			}
+
+			const calculated = await calculate_single_beatmap(request_data);
+
+			if (calculated) {
+				console.log('send calculated');
+				const founded = await find_beatmap_pps(request_data);
+				res.send(founded);
+				return;
+			} else {
+				res.send({ error: 'Карта отсутствует, не удалось скалькулировать карту'});
+				return;
+			}
+			
+		});
+
+
+		
 	}
 }

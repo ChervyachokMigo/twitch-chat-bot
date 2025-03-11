@@ -83,21 +83,25 @@ const add_status = (text) => {
 
 }
 
+const host = 'svdgod.ru';
+const port = '80';
+
 const post = async (action_name, request_args) => {
-	return new Promise ( (res ,rej) => 
-		fetch('http://localhost:3003/' + action_name, {
+	return new Promise ( (res ,rej) => {
+		console.log('fetch', `https://${host}:${port}/${action_name}`);
+		fetch(`https://${host}:${port}/${action_name}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify(request_args)
 		}).then( response => response.json())
-		.then( data => res (data) )
+		.then( data => res (data))
 		.catch( error => {
 			console.log(error)
 			rej({ error });
-		})
-	);
+		});
+	});
 }
 
 let last_data = [];
