@@ -83,20 +83,32 @@ const add_status = (text) => {
 
 }
 
-const host = 'svdgod.ru';
-
 let token = '';
 
-const post = async (action_name, request_args) => {
+const post = async ({ hostname = document.location.origin, url_path, args }) => {
+	const url = `${hostname}/${url_path}`;
 	return new Promise ( (res ,rej) => {
-		console.log('fetch', `https://${host}/${action_name}`);
-		fetch(`https://${host}/${action_name}`, {
+		console.log('fetch', url);
+		fetch( url, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify(request_args)
+			body: JSON.stringify(args)
 		}).then( response => response.json())
+		.then( data => res (data))
+		.catch( error => {
+			console.log(error)
+			rej({ error });
+		});
+	});
+}
+
+const get = async ({ hostname = document.location.origin, url_path, args }) => {
+	const url = `${hostname}/${url_path}`;
+	return new Promise ( (res ,rej) => {
+		console.log('fetch', url);
+		fetch(`${url}?${Object.entries(args).map( ([key, val]) => `${key}=${val}` ).join('&')}`, { method: 'GET',})
 		.then( data => res (data))
 		.catch( error => {
 			console.log(error)
@@ -134,7 +146,7 @@ const send_beatmap = (idx) => {
 
 	add_status(`Отправка карты юзеру "${user}"`);
 
-	post('send_beatmap_to_osu', { beatmap: last_data[idx], user })
+	post({ url_path: 'send_beatmap_to_osu', args: { beatmap: last_data[idx], user }})
 		.then(data => {
 			if (data.error) {
 				console.error(data.error);
@@ -259,7 +271,7 @@ const send_request = () => {
 		osuname: document.getElementById('osuname').value
 	}
 
-	post('recomend', request)
+	post({ url_path: 'recomend', args: request })
 		.then(data => {
 			if (data.error) {
 				console.error(data.error);
@@ -332,7 +344,7 @@ const find_beatmap = () => {
 
 	add_status('Поиск карты');
 
-    post('find_beatmap', { beatmap_url, mods_int })
+    post({ url_path: 'find_beatmap', args: { beatmap_url, mods_int }})
         .then(data => {
             if (data.error) {
                 console.error(data.error);
@@ -343,18 +355,48 @@ const find_beatmap = () => {
                 render_beatmaps();
             }
         })
-		.finally( () => remove_status() );    
+		.finally( () => remove_status() );
 
     return false;
+}
+
+const auth_osu = () => {
+	const url = 'https://osu.ppy.sh/oauth/authorize';
+	const args = {
+			client_id: 38746,
+			redirect_uri: 'https://svdgod.ru/oauth',
+			response_type: 'code',
+            scope: 'identify',
+	}
+	window.location.replace(`${url}?${Object.entries(args).map( ([key, val]) => `${key}=${val}` ).join('&')}`);
 }
 
 $( document ).ready( function() {
 
 	hide_form();
 
+	const url = new URL(window.location.href);
+	const error = url.searchParams.get('error');
+
+	if (error) {
+		switch(error) {
+			case '1':
+                add_status('Ошибка авторизации');
+                break;
+			case '2':
+				add_status('Ошибка получения информации о пользователе');
+				break;
+            default:
+                add_status('Неизвестная ошибка');
+                break;
+		}
+		remove_status();
+		return;
+	}
+
 	add_status('Загрузка');
 
-	post('get_last_params')
+	post({ url_path: 'get_last_params', args: {} })
 		.then(data => {
 			if (data.error) {
 				console.error(data.error);

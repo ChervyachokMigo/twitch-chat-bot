@@ -9,8 +9,12 @@ const { formatBeatmapInfoOsu } = require('../../twitchchat/tools/format_beatmap'
 const { v2 } = require('osu-api-extended');
 const { checkTokenExpires } = require('../../osu/requests');
 const calculate_single_beatmap = require('../calculate_single_beatmap');
+const { get_client_id, convert_ip_to_int } = require('./tools');
+const { default: axios } = require('axios');
+const { OSU_CLIENT_SECRET } = require('../../config');
 
 const last_request_params_path = path.join(__dirname, '..', '..', 'data', 'osu_pps', 'last_request_params.json');
+const web_users_path = path.join(__dirname, '..', '..', 'data', 'osu_pps', 'users');
 
 const request_params_default = {
 	acc: 99,
@@ -27,6 +31,9 @@ const request_params_default = {
 
 let last_request_params = null;
 
+//const host = '127.0.0.1';
+const host = '0.0.0.0';
+
 const start_webserver = (port, public_path = path.join(__dirname, 'public')) => {
 	const app = express();
 
@@ -42,8 +49,8 @@ const start_webserver = (port, public_path = path.join(__dirname, 'public')) => 
 
 	app.use(express.static( public_path ));
 
-	app.listen(port, '0.0.0.0',  () => {
-		console.log(`http://localhost:${port}`);
+	app.listen(port, host,  () => {
+		console.log(`http://${host}:${port}`);
 	});
 
 	return app;
@@ -57,6 +64,7 @@ module.exports = {
 	init: async () => {
 
 		check_folder(path.dirname(last_request_params_path));
+		check_folder(web_users_path);
 
 		if (!last_request_params) {
 			if (existsSync(last_request_params_path)) {
@@ -70,6 +78,79 @@ module.exports = {
 		const web_app = start_webserver(80);
 
         //API POSTS
+
+		web_app.get('/oauth', async (req, res) => {
+            const request_data = req.query;
+			if (!request_data.code){
+				res.send({ error: 'Авторизация невозможна: Неполучен код' });
+				return;
+			}
+			
+			// const id = get_client_id(req);
+			// console.log(convert_ip_to_int(id.ip));
+
+			console.log('code', request_data.code)
+
+			const url = 'https://osu.ppy.sh/oauth/token';
+			const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            };
+			const args = {
+				client_id: 38746,
+				client_secret: OSU_CLIENT_SECRET,
+				code: request_data.code,
+				grant_type: 'authorization_code',
+				redirect_uri: 'https://svdgod.ru/oauth',
+			}
+
+			const auth_result = await axios.post(url, args, { headers });
+
+			if (auth_result.status !== 200) {
+				console.error('Авторизация невозможна:', auth_result.status, auth_result.data);
+				res.redirect('https://svdgod.ru/?error=1');
+                return;
+			}
+
+			const tokens = auth_result.data;
+
+			console.log('web_app.get', tokens);
+
+			const me_result = await axios.get('https://osu.ppy.sh/api/v2/me', { headers: {
+				'Authorization': `Bearer ${tokens.access_token}`,
+				'Accept': 'application/json',
+                'Content-Type': 'application/json',
+			}});
+
+			if (me_result.status!== 200) {
+                console.error('Ошибка получения информации о пользователе:', me_result.status, me_result.data);
+				res.redirect('https://svdgod.ru/?error=2');
+                return;
+            }
+
+			console.log({ id: me_result.data.id, name: me_result.data.username });
+
+			const user_config_path = path.join(web_users_path, `${me_result.data.id}.json`);
+
+			const client = get_client_id(req);
+			console.log('user_config_path', user_config_path)
+			if (!existsSync(user_config_path)) {
+				const data = {
+					id: me_result.data.id, 
+					username: me_result.data.username,
+					form_params: request_params_default,
+					tokens,
+					token_recieve: new Date().valueOf(),
+					ip: convert_ip_to_int(client.ip),
+				}
+
+				console.log('save data', data);
+
+				writeFileSync(user_config_path, JSON.stringify(data, null, 4), {encoding: 'utf8'});
+			}
+
+			res.redirect('https://svdgod.ru/');
+		});
 
 		web_app.post('/get_last_params',async (req, res) => {
 			res.send(last_request_params);

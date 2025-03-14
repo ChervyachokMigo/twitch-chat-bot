@@ -4,6 +4,8 @@ module.exports = {
 
     OSU_API_KEY: '',
 
+	OSU_CLIENT_SECRET: '',
+
     DB_HOST: `localhost`, 
     DB_PORT: `3306`, 
     DB_USER: ``, 
